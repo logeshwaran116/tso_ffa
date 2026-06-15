@@ -1,0 +1,370 @@
+{
+    "admin": {
+        "commands": [
+            "end",
+            "gp",
+            "kill",
+            "heal",
+            "curse",
+            "sleep",
+            "superpunch",
+            "freeze",
+            "unfreeze",
+            "godmode",
+            "fly",
+            "invisible",
+            "creepy",
+            "headless",
+            "celebrate",
+            "kick",
+            "mute",
+            "unmute",
+            "nv",
+            "dv",
+            "slomo",
+            "remove",
+            "lm",
+            "sm",
+            "gm",
+            "rm",
+            "hl",
+            "celeb",
+            "creep",
+            "inv",
+            "sp",
+            "spaz",
+            "spazall",
+            "texall",
+            "boxall",
+            "zombieall",
+            "tex",
+            "hugall",
+            "box",
+            "tint",
+            "info",
+            "reflections",
+            "ban",
+            "pme",
+            "floater"
+        ],
+        "tag": "\ue046\u1d00\u1d05\u1d0d\u026a\u0274\ue046",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ],
+        "ids": [
+            "pb-IF4OUVocBg==",
+            "pb-IF4gURBfDw==",
+            "pb-IF4hUxgDKQ==",
+            "pb-IF4GUU9aLg==",
+            "pb-IF4wVVVSKQ==",
+            "pb-IF4tUVQyXQ=="
+        ]
+    },
+    "bypass-warn": {
+        "commands": [],
+        "ids": [
+            "pb-IF5XUm9eAg==",
+            "pb-IF43VUwlAg==",
+            "pb-IF4iVUc5Cg==",
+            "pb-IF4vNnMJ",
+            "pb-IF4TVWwZUQ==",
+            "pb-IF4OUVoRUA=="
+        ],
+        "tag": "",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "cs": {
+        "commands": [
+            "end",
+            "gp",
+            "kill",
+            "heal",
+            "curse",
+            "sleep",
+            "superpunch",
+            "freeze",
+            "unfreeze",
+            "godmode",
+            "fly",
+            "invisible",
+            "creepy",
+            "headless",
+            "celebrate",
+            "kick",
+            "mute",
+            "unmute",
+            "nv",
+            "dv",
+            "slomo",
+            "remove",
+            "lm",
+            "sm",
+            "gm",
+            "rm",
+            "hl",
+            "celeb",
+            "creep",
+            "inv",
+            "sp",
+            "quit",
+            "restart",
+            "recents",
+            "spaz",
+            "spazall",
+            "texall",
+            "boxall",
+            "zombieall",
+            "tex",
+            "hugall",
+            "box",
+            "tint",
+            "info",
+            "reflections",
+            ""
+        ],
+        "tag": "\u2605 \ud835\udc02\ud835\udc0e\ud835\udc0c\ud835\udc0f\ud835\udc0b\ud835\udc00\ud835\udc08\ud835\udc0d\ud835\udc13 \ud835\udc12\ud835\udc13\ud835\udc00\ud835\udc05\ud835\udc05 \u2605",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ],
+        "ids": [
+            "pb-IF4GU3o4Vg==",
+            "pb-IF43UEkdUw=="
+        ]
+    },
+    "leadstaff": {
+        "commands": [
+            "pme",
+            "end",
+            "gp",
+            "kill",
+            "heal",
+            "curse",
+            "sleep",
+            "superpunch",
+            "freeze",
+            "unfreeze",
+            "godmode",
+            "fly",
+            "invisible",
+            "creepy",
+            "headless",
+            "celebrate",
+            "kick",
+            "mute",
+            "unmute",
+            "nv",
+            "dv",
+            "slomo",
+            "remove",
+            "lm",
+            "sm",
+            "gm",
+            "rm",
+            "hl",
+            "celeb",
+            "creep",
+            "inv",
+            "sp",
+            "quit",
+            "restart",
+            "recents",
+            "spaz",
+            "spazall",
+            "texall",
+            "boxall",
+            "zombieall",
+            "tex",
+            "hugall",
+            "box",
+            "tint",
+            "info",
+            "reflections",
+            "customtag",
+            "removetag",
+            "customeffect",
+            "removeeffect",
+            "",
+            "say",
+            "ban"
+        ],
+        "ids": [
+            "pb-IF5QUVNZUw==",
+            "pb-IF5SVWodFA==",
+            "pb-IF4UUhhfEA==",
+            "pb-IF4NU2ISAA==",
+            "pb-IF4SUEw6LQ==",
+            "pb-IF43UU0DBg=="
+        ],
+        "tag": "\ue048\u029f\u1d07\u1d00\u1d05\ua731\u1d1b\u1d00\ua730\ua730\ue048",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "moderator": {
+        "commands": [
+            "ALL"
+        ],
+        "ids": [
+            "pb-IF4CURQdKA==",
+            "pb-IF4eUlgDCA=",
+            "pb-IF4hU1YtHQ==",
+            "pb-IF4FD1c8",
+            "pb-IF4vU1A9EA==",
+            "pb-IF4qUxgGXQ=="
+        ],
+        "tag": "\ue04f\u1d0d\u1d0f\u1d05\u1d07\u0280\u1d00\u1d1b\u1d0f\u0280\ue04f",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "owner": {
+        "commands": [
+            "ALL",
+            "pme"
+        ],
+        "ids": [
+            "pb-JiNJARBaXEFBVF9HFkNXXF1EF0ZaRlZE",
+            "pb-IF4TVWwZUQ==",
+            "pb-IF4SVW9dEg==",
+            "pb-IF5XUm9eAg==",
+            "pb-IF4dUk8mMg==",
+            "pb-IF4zUkwpAg==",
+            "pb-IF5cU08EEA==",
+            "pb-IF4CUmEDNQ==",
+            "pb-IF4OU0UkLw=="
+        ],
+        "tag": "\\c\u1d0f\u1d21\u0274\u1d07\u0280\\c",
+        "tagcolor": [
+            1,
+            0.6,
+            0.4
+        ]
+    },
+    "pros": {
+        "commands": [],
+        "ids": [],
+        "tag": "pros",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "protected": {
+        "commands": [],
+        "ids": [
+            "pb-IF4eUlgDCA==",
+            "pb-IF4qUxgGXQ==",
+            "pb-IF4zUkwpAg=="
+        ],
+        "tag": "protected",
+        "tagcolor": [
+            1,
+            1,
+            0.2
+        ]
+    },
+    "smoothy": {
+        "commands": [],
+        "ids": [],
+        "tag": "smoothy",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "top5": {
+        "commands": [],
+        "ids": [
+            "pb-IF4qUxgGXQ==",
+            "pb-IF4wVVVSKQ==",
+            "pb-IF4CUHdeIw==",
+            "pb-IF4mFk4b",
+            "pb-IF4sXmItAA=="
+        ],
+        "tag": "\ue048\u1d1b\u1d0f\u1d18-\u1d0d\u1d07\u1d0d\u0299\u1d07\u0280\ue048",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "vip": {
+        "commands": [
+            "end",
+            "gp",
+            "kill",
+            "heal",
+            "curse",
+            "sleep",
+            "superpunch",
+            "freeze",
+            "unfreeze",
+            "godmode",
+            "fly",
+            "invisible",
+            "creepy",
+            "headless",
+            "celebrate",
+            "kick",
+            "mute",
+            "dv",
+            "nv",
+            "slomo",
+            "sm",
+            "gm",
+            "hl",
+            "celeb",
+            "creep",
+            "inv",
+            "sp",
+            "spaz",
+            "spazall",
+            "texall",
+            "boxall",
+            "zombieall",
+            "tex",
+            "hugall",
+            "box",
+            "tint",
+            "info",
+            "reflections"
+        ],
+        "ids": [
+            "pb-IF42Ulk5Jw=="
+        ],
+        "tag": "\u1d20\u026a\u1d18",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    },
+    "\ud83d\udc07  \ud83c\udf80  \ud835\udc3f\ud835\udc3c\ud835\udcaf\ud835\udcaf\ud835\udc3f\ud835\udc38  \u13d5\u13a5\u13d5\u13d6\u13cb\u13d2 \ud83c\udf80  \ud83d\udc07": {
+        "commands": [
+            "ALL"
+        ],
+        "ids": [
+            "pb-IF4eUlgDCA=="
+        ],
+        "tag": "\ud83d\udc07  \ud83c\udf80  \ud835\udc3f\ud835\udc3c\ud835\udcaf\ud835\udcaf\ud835\udc3f\ud835\udc38  \u13d5\u13a5\u13d5\u13d6\u13cb\u13d2 \ud83c\udf80  \ud83d\udc07",
+        "tagcolor": [
+            1,
+            1,
+            1
+        ]
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "ban": {
+        "ids": {},
+        "ips": {},
+        "deviceids": {}
+    },
+    "muted-ids": {},
+    "kick-vote-disabled": {}
+}

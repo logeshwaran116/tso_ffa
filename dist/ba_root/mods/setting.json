@@ -1,0 +1,202 @@
+{
+    "Anti-IdRevealer": false,
+    "ChatCommands": {
+        "BrodcastCommand": true
+    },
+    "HostDeviceName": "v1.4",
+    "HostName": "TSO",
+    "KickVoteMsgType": "chat",
+    "ScoreScreenAnnouncement": {
+        "enable": true,
+        "msg": [
+            "Type /coinhelp to see coins commands.",
+            "Type /claim to get daily claim",
+            "downlaod new mods from discord"
+        ]
+    },
+    "ShowKickVoteStarterName": true,
+    "StumbledScoreScreen": true,
+    "WarnCooldownMinutes": 30,
+    "afk_remover": {
+        "enable": false,
+        "ingame_idle_time_in_secs": 60,
+        "kick_idle_from_lobby": false,
+        "lobby_idle_time_in_secs": 10
+    },
+    "afterWarnKickMsg": "Enough warnings, Goodbye have a nice day :)",
+    "allowInGameChat": true,
+    "allowTeamChat": true,
+    "allowVotes": true,
+    "autoNightMode": {
+        "enable": false,
+        "endTime": "06:00",
+        "fireflies": false,
+        "fireflies_random_color": false,
+        "startTime": "18:30"
+    },
+    "autoTeamBalance": true,
+    "ballistica_web": {
+        "discord_link": "",
+        "enable": true,
+        "server_password": "python"
+    },
+    "character_chooser": {
+        "enable": true
+    },
+    "colorful_explosions": {
+        "enable": false
+    },
+    "colorfullMap": false,
+    "contributeData": true,
+    "coopModeWithLessPlayers": {
+        "enable": false,
+        "minPlayerToExitCoop": 3
+    },
+    "custom_characters": {
+        "enable": true
+    },
+    "discordWebHook": {
+        "enable": false,
+        "webhookURL": "https://discord.com/api/webhooks/1414171174866391041/CJ0oXdkAvsKh_VsZW7vouVBLtWMojCRH7_Ri7F0Ywx7CUzlP-I99dPr7lkX_zERA-0NR"
+    },
+    "discordbot": {
+        "enable": true,
+        "liveChat": true,
+        "leaderboardChannelID": 1510530366035853372,
+        "liveStatsChannelID": 1468885998472794214,
+        "logsChannelID": 1468886074808991784,
+        "directCmdChannelID": 1468886329193660558,
+        "roleCmdChannelIds": [1468886394561888287],
+        "gameInfoChannelID": 1468886187690295436,
+        "complaintsChannelID": 1468269892925915166,
+        "complaintStaffRoleID": 1468270279716245709,
+        "chatlistChannelID": 0,
+        "token": ""
+    },
+    "elPatronPowerups": {
+        "Quantity": {
+            "Curse": 2,
+            "Fire Bombs": 2,
+            "Fly Bombs": 2,
+            "Goodbye": 2,
+            "Healing Damage": 2,
+            "Health": 2,
+            "Ice Bombs": 2,
+            "Ice Man": 0,
+            "Impact Bombs": 2,
+            "Impairment Bombs": 2,
+            "Mine Bombs": 2,
+            "Punch": 0,
+            "Shield": 0,
+            "Speed": 0,
+            "Sticky Bombs": 2,
+            "Tank Shield": 0,
+            "Triple": 3
+        },
+        "enable": true,
+        "settings": {
+            "Healing Damage PTG": 72,
+            "Powers Gravity": true,
+            "Powerup Name": false,
+            "Powerup Scale": 1,
+            "Powerup Style": "Auto",
+            "Powerup Time": true,
+            "Powerup With Shield": false,
+            "Powerups": {
+                "Curse": 2,
+                "Fire Bombs": 2,
+                "Fly Bombs": 2,
+                "Goodbye": 2,
+                "Healing Damage": 2,
+                "Health": 2,
+                "Ice Bombs": 2,
+                "Ice Man": 0,
+                "Impact Bombs": 2,
+                "Impairment Bombs": 2,
+                "Mine Bombs": 2,
+                "Punch": 0,
+                "Shield": 0,
+                "Speed": 0,
+                "Sticky Bombs": 2,
+                "Tank Shield": 0,
+                "Triple": 3
+            },
+            "Tank Shield PTG": 96
+        }
+    },
+    "enableHitTexts": false,
+    "enableTagAnimation": true,
+    "enableTop5effects": true,
+    "enableeffects": true,
+    "enablehptag": true,
+    "enablerank": true,
+    "enablestats": true,
+    "enabletags": true,
+    "firstTimeJoinMsg": "Welcome to the server,we r saving all your account details and chats",
+    "leaderboard": {
+        "barsBehindName": true,
+        "enable": true
+    },
+    "maxAccountPerIP": 2,
+    "maxPlayersPerDevice": 2,
+    "maxWarnCount": 2,
+    "mikirogQuickTurn": {
+        "enable": false
+    },
+    "minAgeToChatInHours": 24,
+    "minAgeToJoinInHours": 24,
+    "newResultBoard": true,
+    "playermod": {
+        "default_bomb": "normal",
+        "default_bomb_count": 2,
+        "default_boxing_gloves": true,
+        "default_shield": false
+    },
+    "customBombs": {
+        "silence": {
+            "enable": true,
+            "spawn_from_boxes": true,
+            "spawn_chance": 0.15
+        },
+        "gravity": {
+            "enable": true,
+            "spawn_from_boxes": true,
+            "spawn_chance": 0.10
+        }
+    },
+    "playlists": {
+        "dm": 569392,
+        "elim": 412172,
+        "epic": 569393,
+        "ffa": 412175,
+        "ffasmash": 412179,
+        "smash": 412151,
+        "soccer": 412160,
+        "team": 12345,
+        "v": 569391
+    },
+    "regularWelcomeMsg": "Welcome Back",
+    "sameCharacterForTeam": false,
+    "statsResetAfterDays": 45,
+    "textonmap": {
+        "bottom left watermark": "\n____________________________________\n\n\n____________________________________\n",
+        "center highlights": {
+            "color": [
+                1,
+                0,
+                0
+            ],
+            "msg": [
+                "type end to start end vote",
+                "start msg with prefix .(dot) to send in game popup msg",
+                "start msg with prefix ,(comma) to send msg to teammates",
+                "                  "
+            ],
+            "randomColor": true
+        },
+        "top watermark": "⚔️『━━━━━━━━━━━━━━』⚔️ 👑 ᴛᴀᴍɪʟ sᴇʀᴠᴇʀ ᴏғғɪᴄɪᴀʟ 👑 ⚔️『━━━━━━━━━━━━━━』⚔️"
+    },
+    "useV2Account": false,
+    "warnMsg": "WARNING !!!",
+    "whitelist": false
+}

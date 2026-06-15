@@ -1,0 +1,433 @@
+{
+ "Achievements": {
+  "Boom Goes the Dynamite": {
+   "Complete": false
+  },
+  "Boxer": {
+   "Complete": false
+  },
+  "Dual Wielding": {
+   "Complete": false
+  },
+  "Flawless Victory": {
+   "Complete": false
+  },
+  "Free Loader": {
+   "Complete": true
+  },
+  "Gold Miner": {
+   "Complete": false
+  },
+  "Got the Moves": {
+   "Complete": false
+  },
+  "In Control": {
+   "Complete": false
+  },
+  "Last Stand God": {
+   "Complete": false
+  },
+  "Last Stand Master": {
+   "Complete": false
+  },
+  "Last Stand Wizard": {
+   "Complete": false
+  },
+  "Mine Games": {
+   "Complete": false
+  },
+  "Off You Go Then": {
+   "Complete": true
+  },
+  "Onslaught God": {
+   "Complete": false
+  },
+  "Onslaught Master": {
+   "Complete": false
+  },
+  "Onslaught Training Victory": {
+   "Complete": true
+  },
+  "Onslaught Wizard": {
+   "Complete": false
+  },
+  "Precision Bombing": {
+   "Complete": false
+  },
+  "Pro Boxer": {
+   "Complete": false
+  },
+  "Pro Football Shutout": {
+   "Complete": false
+  },
+  "Pro Football Victory": {
+   "Complete": false
+  },
+  "Pro Onslaught Victory": {
+   "Complete": false
+  },
+  "Pro Runaround Victory": {
+   "Complete": false
+  },
+  "Rookie Football Shutout": {
+   "Complete": false
+  },
+  "Rookie Football Victory": {
+   "Complete": false
+  },
+  "Rookie Onslaught Victory": {
+   "Complete": false
+  },
+  "Runaround God": {
+   "Complete": false
+  },
+  "Runaround Master": {
+   "Complete": false
+  },
+  "Runaround Wizard": {
+   "Complete": false
+  },
+  "Sharing is Caring": {
+   "Complete": false
+  },
+  "Stayin' Alive": {
+   "Complete": false
+  },
+  "Super Mega Punch": {
+   "Complete": false
+  },
+  "Super Punch": {
+   "Complete": false
+  },
+  "TNT Terror": {
+   "Complete": false
+  },
+  "Team Player": {
+   "Complete": true
+  },
+  "The Great Wall": {
+   "Complete": false
+  },
+  "The Wall": {
+   "Complete": false
+  },
+  "Uber Football Shutout": {
+   "Complete": false
+  },
+  "Uber Football Victory": {
+   "Complete": false
+  },
+  "Uber Onslaught Victory": {
+   "Complete": false
+  },
+  "Uber Runaround Victory": {
+   "Complete": false
+  }
+ },
+ "Auto Account State": "Server",
+ "Auto Balance Teams": true,
+ "Bear Coin": 8400,
+ "Bear Store": {
+  "Buy Firebombs": false,
+  "Buy Option": false,
+  "Buy Percentage": false,
+  "Promo Code": {
+   "B-0mB3RYT2z": [
+    true,
+    910
+   ],
+   "B-Asd14mON9G0D": [
+    true,
+    910
+   ],
+   "D-rAcK0cJ23": [
+    true,
+    910
+   ],
+   "E-Am54igO42Os": [
+    true,
+    600
+   ],
+   "E-M4uN3K34XB": [
+    true,
+    840
+   ],
+   "E-a27ZO6f3Y": [
+    true,
+    600
+   ],
+   "G-Am54igO42Os": [
+    true,
+    1100
+   ],
+   "P-tRo8nM8dZ": [
+    true,
+    2800
+   ],
+   "PM-731ClcAF": [
+    true,
+    50000
+   ],
+   "Y-tU2B3S": [
+    true,
+    500
+   ]
+  }
+ },
+ "Campaigns": {
+  "Default": {
+   "Onslaught Training": {
+    "Complete": true,
+    "High Scores": {
+     "1 Player": [
+      [
+       476,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "1P3Dr1n"
+         }
+        ]
+       }
+      ],
+      [
+       412,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "1P3Dr1n"
+         }
+        ]
+       }
+      ],
+      [
+       374,
+       {
+        "players": [
+         {
+          "character": "B-9000",
+          "name": "Uther"
+         }
+        ]
+       }
+      ],
+      [
+       257,
+       {
+        "players": [
+         {
+          "character": "B-9000",
+          "name": "Uther"
+         }
+        ]
+       }
+      ],
+      [
+       215,
+       {
+        "players": [
+         {
+          "character": "B-9000",
+          "name": "Uther"
+         }
+        ]
+       }
+      ],
+      [
+       70,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "1P3Dr1n"
+         }
+        ]
+       }
+      ],
+      [
+       61,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "1P3Dr1n"
+         }
+        ]
+       }
+      ]
+     ],
+     "2 Player": [
+      [
+       831,
+       {
+        "players": [
+         {
+          "character": "Spaz",
+          "name": "1P3Dr1n"
+         },
+         {
+          "character": "Pascal",
+          "name": "Jolly"
+         }
+        ]
+       }
+      ],
+      [
+       574,
+       {
+        "players": [
+         {
+          "character": "Pascal",
+          "name": "Jolly"
+         },
+         {
+          "character": "B-9000",
+          "name": "Uther"
+         }
+        ]
+       }
+      ]
+     ],
+     "3 Player": [
+      [
+       1025,
+       {
+        "players": [
+         {
+          "character": "Pascal",
+          "name": "Skipper"
+         },
+         {
+          "character": "B-9000",
+          "name": "Uther"
+         },
+         {
+          "character": "Agent Johnson",
+          "name": "jesus"
+         }
+        ]
+       }
+      ]
+     ]
+    },
+    "Rating": 10.0
+   }
+  }
+ },
+ "Custom Team Colors": [
+  [
+   0.2,
+   0.6,
+   1.0
+  ],
+  [
+   1.0,
+   0.2,
+   0.6
+  ]
+ ],
+ "Custom Team Names": [
+  "K.L.A.U.S",
+  "G.T"
+ ],
+ "Default Player Profiles": {
+  "Client Input Device #1": "__account__",
+  "Client Input Device #10": "__account__",
+  "Client Input Device #11": "__account__",
+  "Client Input Device #12": "A K I R A",
+  "Client Input Device #13": "__account__",
+  "Client Input Device #2": "Quick silver",
+  "Client Input Device #3": "K.L.A.U.S",
+  "Client Input Device #4": "__account__",
+  "Client Input Device #5": "Sentium",
+  "Client Input Device #6": "__account__",
+  "Client Input Device #7": "__account__",
+  "Client Input Device #8": "__account__",
+  "Client Input Device #9": "CHRONES"
+ },
+ "FFA Series Length": 24,
+ "Fleet Zone Ping Last Flush Time": 1773736526,
+ "Fleet Zone Pings": {
+  "prod": {
+   "jakarta.v4": 16.824148947127163,
+   "kuala_lampur.v4": 6.965014773884787,
+   "singapore.v4": 0.9368619051463902
+  }
+ },
+ "Free-for-All Playlist Randomize": true,
+ "Free-for-All Playlist Selection": "__default__",
+ "Free-for-All Playlists": {},
+ "Idle Exit Minutes": 20.0,
+ "Local Account Name": "Server22807182",
+ "PPM Settings": {
+  "Healing Damage PTG": 72,
+  "Powers Gravity": true,
+  "Powerup Name": false,
+  "Powerup Scale": 1,
+  "Powerup Style": "Auto",
+  "Powerup Time": true,
+  "Powerup With Shield": false,
+  "Powerups": {
+   "Curse": 2,
+   "Fire Bombs": 2,
+   "Fly Bombs": 2,
+   "Goodbye": 2,
+   "Healing Damage": 2,
+   "Health": 2,
+   "Ice Bombs": 2,
+   "Ice Man": 0,
+   "Impact Bombs": 2,
+   "Impairment Bombs": 2,
+   "Mine Bombs": 2,
+   "Punch": 0,
+   "Shield": 0,
+   "Speed": 0,
+   "Sticky Bombs": 2,
+   "Tank Shield": 0,
+   "Triple": 3
+  },
+  "Tank Shield PTG": 96
+ },
+ "Player Profiles": {
+  "__account__": {
+   "character": "Spaz",
+   "color": [
+    0.5,
+    0.25,
+    1.0
+   ],
+   "highlight": [
+    0.5,
+    0.25,
+    1.0
+   ]
+  }
+ },
+ "Plugins": {
+  "custom_hooks.modSetup": {
+   "enabled": true
+  },
+  "plugins.Init": {
+   "enabled": true
+  },
+  "plugins.auto_stunt.byHeySmoothy": {
+   "enabled": true
+  },
+  "plugins.baCheatMax.Install": {
+   "enabled": true
+  }
+ },
+ "Port": 43210,
+ "SceneV1 Host Protocol": 35,
+ "Show Tutorial": false,
+ "Signed In Last Session": false,
+ "Team Tournament Playlist Randomize": true,
+ "Team Tournament Playlist Selection": "tamil epic final playlist ",
+ "Team Tournament Playlists": {},
+ "Teams Series Length": 7,
+ "launchCount": 3709,
+ "lc14173": 1,
+ "lc14292": 1
+}

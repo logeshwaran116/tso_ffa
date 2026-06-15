@@ -1,0 +1,50 @@
+{
+    "admins": [
+        "pb-IF4OU0UkLw=="
+    ],
+    "authenticate_clients": true,
+    "auto_balance_teams": true,
+    "clean_exit_minutes": 60,
+    "coop_campaign": "Easy",
+    "coop_level": "Onslaught Training",
+    "enable_default_kick_voting": true,
+    "enable_queue": true,
+    "enable_telnet": false,
+    "ffa_series_length": 24,
+    "idle_exit_minutes": 20,
+    "log_levels": null,
+    "max_party_size": 12,
+    "party_is_public": true,
+    "party_name": "\ud83d\udcabTAMIL FFA FIGHT CLUB\u2728",
+    "player_rejoin_cooldown": 3,
+    "playlist_code": 607651,
+    "playlist_inline": null,
+    "playlist_shuffle": true,
+    "port": 43210,
+    "protocol_version": 35,
+    "public_ipv4_address": null,
+    "public_ipv6_address": null,
+    "session_max_players_override": 8,
+    "session_type": "ffa",
+    "show_tutorial": false,
+    "stats_url": "https://discord.gg/R5ZMub6cMY",
+    "stress_test_players": null,
+    "team_colors": [
+        [
+            0.2,
+            0.8,
+            0.6
+        ],
+        [
+            0.8,
+            0.4,
+            0.4
+        ]
+    ],
+    "team_names": [
+        "Bajji",
+        "Vadai"
+    ],
+    "teams_series_length": 7,
+    "unclean_exit_minutes": 90
+}
