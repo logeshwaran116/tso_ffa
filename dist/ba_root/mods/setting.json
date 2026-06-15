@@ -149,17 +149,17 @@
     "playermod": {
         "default_bomb": "normal",
         "default_bomb_count": 2,
-        "default_boxing_gloves": true,
+        "default_boxing_gloves": false,
         "default_shield": false
     },
     "customBombs": {
         "silence": {
-            "enable": true,
+            "enable": false,
             "spawn_from_boxes": true,
             "spawn_chance": 0.15
         },
         "gravity": {
-            "enable": true,
+            "enable": false,
             "spawn_from_boxes": true,
             "spawn_chance": 0.10
         }
