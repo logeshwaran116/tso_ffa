@@ -13,19 +13,19 @@
     "ffa_series_length": 24,
     "idle_exit_minutes": 20,
     "log_levels": null,
-    "max_party_size": 12,
+    "max_party_size": 8,
     "party_is_public": true,
-    "party_name": "\ud83d\udcabTAMIL FFA FIGHT CLUB\u2728",
+    "party_name": "\ud83d\udcabTAMIL 2 v 2 Epic Teams\u2728",
     "player_rejoin_cooldown": 3,
-    "playlist_code": 608108,
+    "playlist_code": 609312,
     "playlist_inline": null,
     "playlist_shuffle": true,
     "port": 43210,
     "protocol_version": 35,
     "public_ipv4_address": null,
     "public_ipv6_address": null,
-    "session_max_players_override": 8,
-    "session_type": "ffa",
+    "session_max_players_override": 4,
+    "session_type": "teams",
     "show_tutorial": false,
     "stats_url": "https://discord.gg/R5ZMub6cMY",
     "stress_test_players": null,
@@ -42,8 +42,8 @@
         ]
     ],
     "team_names": [
-        "Bajji",
-        "Vadai"
+        "Makima",
+        "Yor"
     ],
     "teams_series_length": 7,
     "unclean_exit_minutes": 90

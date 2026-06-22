@@ -62,9 +62,9 @@
     "discordbot": {
         "enable": true,
         "liveChat": true,
-        "leaderboardChannelID": 1516072830473601075,
-        "liveStatsChannelID": 1516072789356970096,
-        "logsChannelID": 1516072876963266591,
+        "leaderboardChannelID": 1518577331772588204,
+        "liveStatsChannelID": 1518576652689604619,
+        "logsChannelID": 1518577809856008282,
         "directCmdChannelID": 1516072968499888228,
         "roleCmdChannelIds": [1516072968499888228],
         "gameInfoChannelID": null,
@@ -77,7 +77,7 @@
         "Quantity": {
             "Curse": 2,
             "Fire Bombs": 2,
-            "Fly Bombs": 2,
+            "Fly Bombs": 0,
             "Goodbye": 2,
             "Healing Damage": 2,
             "Health": 2,
@@ -105,7 +105,7 @@
             "Powerups": {
                 "Curse": 2,
                 "Fire Bombs": 2,
-                "Fly Bombs": 2,
+                "Fly Bombs": 0,
                 "Goodbye": 2,
                 "Healing Damage": 2,
                 "Health": 2,
