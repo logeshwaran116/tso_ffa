@@ -149,7 +149,7 @@
     "playermod": {
         "default_bomb": "normal",
         "default_bomb_count": 2,
-        "default_boxing_gloves": false,
+        "default_boxing_gloves": true,
         "default_shield": false
     },
     "customBombs": {
