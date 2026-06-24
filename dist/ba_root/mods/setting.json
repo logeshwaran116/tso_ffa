@@ -179,7 +179,7 @@
     "sameCharacterForTeam": false,
     "statsResetAfterDays": 45,
     "textonmap": {
-        "bottom left watermark": "\n____________________________________\n\n\n____________________________________\n",
+        "bottom left watermark": "\n____________________________________\n____________________________________\n",
         "center highlights": {
             "color": [
                 1,
