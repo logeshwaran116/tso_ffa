@@ -104,7 +104,7 @@ class textonmap:
                               'v_attach': 'bottom',
                               'h_attach': 'left',
                               'scale': 0.7,
-                              'position': (25, 40),
+                              'position': (25, 30),
                               'color': (1, 1, 1)
                           })
 

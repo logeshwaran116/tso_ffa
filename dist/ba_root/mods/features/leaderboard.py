@@ -101,7 +101,7 @@ def build_leaderboard_embed(import_discord: object) -> object:
         timestamp=datetime.now(timezone.utc)
     )
     embed.set_footer(
-        text=f'Auto Updates Every {UPDATE_INTERVAL} minute{"s" if UPDATE_INTERVAL > 1 else ""} | Last updated at',
+        text=f'Auto Updates Every {UPDATE_INTERVAL} minute{"s" if UPDATE_INTERVAL > 1 else ""} | Last updated',
         icon_url = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Gray_circles_rotate.gif?_=20110906194014"
     )
 

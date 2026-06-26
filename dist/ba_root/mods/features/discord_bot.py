@@ -78,16 +78,20 @@ LIVE_STATS_CHANNEL_ID = 1467399612288471162
 DIRECT_CMD_CHANNEL_ID = 1467402520828706817
 ROLE_CMD_CHANNEL_IDS = [1467421373617143985]
 ROLE_CMD_CHANNEL_NAMES = {"roles", "role-commands"}
-GAME_INFO_CHANNEL_ID = 1518871456648396800
+GAME_INFO_CHANNEL_ID = 1518869292479807530
 COMPLAINTS_CHANNEL_ID = 1468269892925915166
 COMPLAINT_STAFF_ROLE_ID = 1468270279716245709
 CHATLIST_CHANNEL_ID = 0
 
 liveChat = True
+errorLogs = False
 token = ''
 logs = []
 _logs_lock = Lock()
+_error_logs = []
+_error_logs_lock = Lock()  
 _send_logs_running = False
+_send_error_logs_running = False
 _refresh_stats_task = None
 _send_logs_task = None
 _send_error_logs_task = None
@@ -100,8 +104,8 @@ game_info_msgs = {}
 MAX_CHAT_MESSAGES = 40
 
 # Command prefix for Discord bot
-DISCORD_COMMAND_PREFIX = 's?'
-ROLE_COMMAND_PREFIX = 'sr?'
+DISCORD_COMMAND_PREFIX = 't?'
+ROLE_COMMAND_PREFIX = 'tr?'
 
 # JSON file for storing allowed users
 ALLOWED_USERS_FILE = 'allowed_users.json'
@@ -147,8 +151,13 @@ def push_log(msg):
     with _logs_lock:
         logs.append(msg)
 
-def push_error_log(msg: str):
-    """Queue an error/warning message to send to Discord."""
+def push_error_log(msg):
+    if not errorLogs:
+        return
+    if 'WARNING' in msg:  # ← skip warnings
+        return
+    if 'owner' in msg:
+        return
     global _error_logs
     with _error_logs_lock:
         _error_logs.append(msg)
