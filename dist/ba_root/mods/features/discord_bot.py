@@ -104,8 +104,8 @@ game_info_msgs = {}
 MAX_CHAT_MESSAGES = 40
 
 # Command prefix for Discord bot
-DISCORD_COMMAND_PREFIX = 't?'
-ROLE_COMMAND_PREFIX = 'tr?'
+DISCORD_COMMAND_PREFIX = 's?'
+ROLE_COMMAND_PREFIX = 'sr?'
 
 # JSON file for storing allowed users
 ALLOWED_USERS_FILE = 'allowed_users.json'
