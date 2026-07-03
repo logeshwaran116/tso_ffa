@@ -10,12 +10,526 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, override
 
+import babase
 import bascenev1 as bs
 
 from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
+
+# --- BLAST EFFECT TEST ---
+
+_BLAST_COLORS = {
+    "electric": (0.4, 0.8, 1.0),
+    "stars": (1.0, 0.9, 0.3),
+    "darkmagic":(0.5, 0.0, 1.0),
+    "colorful": (1.0, 1.0, 1.0),
+    "egg": (1.0, 0.4, 0.7),
+    "void": (0.25, 0.25, 0.25)
+}
+
+
+_BLAST_EFFECTS = {
+    "pb-IF4OU0UkLw==": "stars",
+    "pb-IF4rUVIBMQ==": "darkmagic"
+}
+
+
+def _get_source_effect(source_player: bs.Player | None) -> str | None:
+    try:
+        if source_player is None or not source_player.exists():
+            return None
+        pb_id = source_player.sessionplayer.get_v1_account_id()
+        return _BLAST_EFFECTS.get(pb_id)
+    except Exception:
+        return None
+
+def _get_blast_color(effect: str | None) -> tuple[float, float, float] | None:
+    if effect and effect in _BLAST_COLORS:
+        return _BLAST_COLORS[effect]
+    return None
+
+def _emit_blast_effect(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+    effect: str | None,
+) -> None:
+    try:
+        if not effect:
+            return
+
+        if effect == 'electric':
+            _blast_electric(position, velocity)
+        elif effect == 'stars':
+            _blast_stars(position, velocity)
+        elif effect == 'darkmagic':
+            _blast_darkmagic(position, velocity)
+        elif effect == 'colorful':
+            _blast_colorful(position, velocity)
+        elif effect == 'egg':
+            _blast_egg(position, velocity)
+        elif effect == 'void':
+            _blast_void(position, velocity)
+        
+
+    except Exception as e:
+        print(f"[BLAST EFFECT ERROR] {e}")
+
+
+def _blast_electric(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+) -> None:
+    # Initial big spark burst
+    for _ in range(3):
+        bs.emitfx(
+            position=position,
+            velocity=(
+                velocity[0] + random.uniform(-4, 4),
+                velocity[1] + random.uniform(-1, 4),
+                velocity[2] + random.uniform(-4, 4),
+            ),
+            count=random.randint(8, 15),
+            scale=random.uniform(0.3, 0.6),
+            spread=0.8,
+            chunk_type='spark',
+        )
+    bs.emitfx(position=position, spread=1.0, emit_type='distortion')
+
+    elight = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (0.4, 0.8, 1.0),
+            'radius': 2.5,
+            'intensity': 2.0,
+            'height_attenuated': False,
+        },
+    )
+    bs.animate(elight, 'intensity', {
+        0.0: 2.0, 0.05: 0.5, 0.1: 1.8, 0.15: 0.3, 0.2: 0.0,
+    })
+    bs.timer(0.25, elight.delete)
+
+    crackle_light = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (0.3, 0.7, 1.0),
+            'radius': 0.6,
+            'intensity': 0.0,
+            'height_attenuated': False,
+        },
+    )
+
+    def _crackle(elapsed: float = 0.0) -> None:
+        if elapsed >= 1:
+            crackle_light.delete()
+            return
+        bs.emitfx(
+            position=position,
+            velocity=(random.uniform(-2, 2), random.uniform(0, 2), random.uniform(-2, 2)),
+            count=random.randint(3, 8),
+            scale=random.uniform(0.2, 0.4),
+            spread=0.4,
+            chunk_type='spark',
+        )
+        if random.random() < 0.3:
+            bs.emitfx(position=position, spread=0.5, emit_type='distortion')
+        crackle_light.intensity = random.uniform(0.0, 0.6)
+        crackle_light.color = (
+            random.uniform(0.2, 0.5),
+            random.uniform(0.6, 1.0),
+            1.0,
+        )
+        bs.timer(0.08, babase.Call(_crackle, elapsed + 0.08))
+
+    _crackle()
+
+def _blast_stars(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+) -> None:
+    texs = ['bombStickyColor', 'aliColor', 'aliColorMask', 'eggTex3']
+    mesh = bs.getmesh('flash')
+
+    def _spawn_stars(count: int, speed: float) -> None:
+        for _ in range(count):
+            m = speed
+            pos = (
+                position[0] + random.uniform(-0.3, 0.3),
+                position[1] + random.uniform(-0.3, 0.3),
+                position[2] + random.uniform(-0.3, 0.3),
+            )
+            vel = (
+                velocity[0] + random.uniform(-m, m),
+                velocity[1] + random.uniform(1.0, m * 2),
+                velocity[2] + random.uniform(-m, m),
+            )
+            tex = bs.gettexture(random.choice(texs))
+            node = bs.newnode('prop',
+                attrs={
+                    'body': 'sphere',
+                    'position': pos,
+                    'velocity': vel,
+                    'mesh': mesh,
+                    'mesh_scale': random.uniform(0.08, 0.18),
+                    'body_scale': 0.0,
+                    'shadow_size': 0.0,
+                    'gravity_scale': 0.4,
+                    'color_texture': tex,
+                    'reflection': 'soft',
+                    'reflection_scale': [1.5],
+                })
+            light = bs.newnode('light',
+                owner=node,
+                attrs={
+                    'intensity': 1,
+                    'volume_intensity_scale': 0.5,
+                    'color': (
+                        random.uniform(0.5, 1.5),
+                        random.uniform(0.5, 1.5),
+                        random.uniform(0.5, 1.5),
+                    ),
+                    'radius': 0.035,
+                })
+            node.connectattr('position', light, 'position')
+            lifetime = random.uniform(0.3, 0.6)
+            bs.timer(lifetime, node.delete)
+            bs.timer(lifetime, light.delete)
+
+    # Initial big burst
+    _spawn_stars(count=15, speed=3.0)
+
+    # Golden flash light
+    slight = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (1.0, 0.9, 0.2),
+            'radius': 1,
+            'intensity': 0.8,
+            'height_attenuated': False,
+        },
+    )
+    bs.animate(slight, 'intensity', {
+        0.0: 0.8, 0.1: 0.3, 0.2: 0.6, 0.35: 0.1, 0.5: 0.0,
+    })
+    bs.timer(0.6, slight.delete)
+
+
+def _blast_darkmagic(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+) -> None:
+    mesh = bs.getmesh('impactBomb')
+    tex = bs.gettexture('impactBombColor')
+
+    def _spawn_darkmagic(count: int, speed: float) -> None:
+        for _ in range(count):
+            m = speed
+            pos = (
+                position[0] + random.uniform(-0.3, 0.3),
+                position[1] + random.uniform(-0.3, 0.3),
+                position[2] + random.uniform(-0.3, 0.3),
+            )
+            vel = (
+                velocity[0] + random.uniform(-m, m),
+                velocity[1] + random.uniform(5.0, 15.0),  # shoot upward like original
+                velocity[2] + random.uniform(-m, m),
+            )
+            node = bs.newnode('prop',
+                attrs={
+                    'body': 'sphere',
+                    'position': pos,
+                    'velocity': vel,
+                    'mesh': mesh,
+                    'mesh_scale': random.uniform(0.3, 0.5),  # was 0.08-0.18, too small
+                    'body_scale': 0.0,
+                    'shadow_size': 0.0,
+                    'gravity_scale': 0.5,
+                    'color_texture': tex,
+                    'reflection': 'soft',
+                    'reflection_scale': [0.0],
+                })
+            light = bs.newnode('light',
+                owner=node,
+                attrs={
+                    'intensity': 1.0,
+                    'volume_intensity_scale': 0.5,
+                    'color': (0.5, 0.0, 1.0),
+                    'radius': 0.035,
+                })
+            node.connectattr('position', light, 'position')
+            lifetime = random.uniform(0.3, 0.6)
+            bs.timer(lifetime, node.delete)
+            bs.timer(lifetime, light.delete)
+
+    # Initial burst
+    _spawn_darkmagic(count=15, speed=3.0)
+
+    # Purple flash light
+    slight = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (0.5, 0.0, 1.0),
+            'radius': 1,
+            'intensity': 0.8,
+            'height_attenuated': False,
+        },
+    )
+    bs.animate(slight, 'intensity', {
+        0.0: 0.8, 0.1: 0.3, 0.2: 0.6, 0.35: 0.1, 0.5: 0.0,
+    })
+    bs.timer(0.6, slight.delete)
+
+
+def _blast_void(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+) -> None:
+    # Initial big spark burst
+    for _ in range(3):
+        bs.emitfx(
+            position=position,
+            velocity=(
+                velocity[0] + random.uniform(-4, 4),
+                velocity[1] + random.uniform(-1, 4),
+                velocity[2] + random.uniform(-4, 4),
+            ),
+            count=random.randint(8, 15),
+            scale=random.uniform(0.3, 0.6),
+            spread=0.8,
+            chunk_type='spark',
+        )
+    bs.emitfx(position=position, spread=1.0, emit_type='distortion')
+
+    elight = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (0.25, 0.25, 0.25),
+            'radius': 2.5,
+            'intensity': 2.0,
+            'height_attenuated': False,
+        },
+    )
+    bs.animate(elight, 'intensity', {
+        0.0: 2.0, 0.05: 0.5, 0.1: 1.8, 0.15: 0.3, 0.2: 0.0,
+    })
+    bs.timer(0.25, elight.delete)
+
+    crackle_light = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (0.2, 0.2, 0.2),
+            'radius': 0.6,
+            'intensity': 0.0,
+            'height_attenuated': False,
+        },
+    )
+
+    def _crackle(elapsed: float = 0.0) -> None:
+        if elapsed >= 1:
+            crackle_light.delete()
+            return
+        bs.emitfx(
+            position=position,
+            velocity=(random.uniform(-2, 2), random.uniform(0, 2), random.uniform(-2, 2)),
+            count=random.randint(3, 8),
+            scale=random.uniform(0.2, 0.4),
+            spread=0.4,
+            chunk_type='spark',
+        )
+        if random.random() < 0.3:
+            bs.emitfx(position=position, spread=0.5, emit_type='distortion')
+        crackle_light.intensity = random.uniform(0.0, 0.6)
+        crackle_light.color = (
+            random.uniform(0.15, 0.3),
+            random.uniform(0.15, 0.3),
+            random.uniform(0.15, 0.3),
+        )
+        bs.timer(0.08, babase.Call(_crackle, elapsed + 0.08))
+
+    _crackle()
+
+
+def _blast_colorful(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+) -> None:
+    import colorsys
+    # Different textures give different colors visually
+    texs = [
+        'bombStickyColor',
+        'impactBombColor',
+        'landMineLitColor',
+        'eggTex3',
+    ]
+    mesh = bs.getmesh('bomb')
+
+    def _spawn_colorful(count: int, speed: float) -> None:
+        for _ in range(count):
+            m = speed
+            pos = (
+                position[0] + random.uniform(-0.3, 0.3),
+                position[1] + random.uniform(-0.3, 0.3),
+                position[2] + random.uniform(-0.3, 0.3),
+            )
+            vel = (
+                velocity[0] + random.uniform(-m, m),
+                velocity[1] + random.uniform(1.0, m * 2),
+                velocity[2] + random.uniform(-m, m),
+            )
+            tex = bs.gettexture(random.choice(texs))
+            node = bs.newnode('prop',
+                attrs={
+                    'body': 'sphere',
+                    'position': pos,
+                    'velocity': vel,
+                    'mesh': mesh,
+                    'mesh_scale': random.uniform(0.15, 0.35),
+                    'body_scale': 0.0,
+                    'shadow_size': 0.0,
+                    'gravity_scale': 0.4,
+                    'color_texture': tex,
+                    'reflection': 'soft',
+                    'reflection_scale': [1.5],
+                })
+
+            # Bright colored light per prop — this is what gives color
+            h = random.random()
+            r, g, b = colorsys.hsv_to_rgb(h, 1.0, 1.0)
+            light = bs.newnode('light',
+                owner=node,
+                attrs={
+                    'intensity': 1.5,
+                    'volume_intensity_scale': 1.0,
+                    'color': (r, g, b),
+                    'radius': 0.08,
+                })
+            node.connectattr('position', light, 'position')
+            lifetime = random.uniform(0.3, 0.7)
+            bs.timer(lifetime, node.delete)
+            bs.timer(lifetime, light.delete)
+
+    _spawn_colorful(count=15, speed=3)
+
+    # Colorful locator rings on ground
+    for _ in range(6):
+        h = random.random()
+        r, g, b = colorsys.hsv_to_rgb(h, 1.0, 1.0)
+        color = (r, g, b)
+        jitter = (random.uniform(-0.4, 0.4), 0.0, random.uniform(-0.4, 0.4))
+        loc = bs.newnode('locator',
+            attrs={
+                'position': (
+                    position[0] + jitter[0],
+                    position[1] + jitter[1],
+                    position[2] + jitter[2],
+                ),
+                'shape': 'circle',
+                'color': babase.safecolor(color),
+                'size': [random.uniform(0.2, 0.6)],
+                'draw_beauty': False,
+                'additive': True,
+            })
+        h2 = random.random()
+        c2 = colorsys.hsv_to_rgb(h2, 1.0, 1.0)
+        h3 = random.random()
+        c3 = colorsys.hsv_to_rgb(h3, 1.0, 1.0)
+        bs.animate_array(loc, 'color', 3, {0.0: color, 0.3: c2, 0.6: c3})
+        bs.animate(loc, 'opacity', {0.0: 1.0, 0.8: 0.0})
+        bs.timer(0.8, loc.delete)
+
+    # White flash — lets the colored lights pop
+    slight = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (1.0, 1.0, 1.0),
+            'radius': 1,
+            'intensity': 0.8,
+            'height_attenuated': False,
+        },
+    )
+    bs.animate(slight, 'intensity', {
+        0.0: 0.8, 0.1: 0.3, 0.2: 0.6, 0.35: 0.1, 0.5: 0.0,
+    })
+    bs.timer(0.6, slight.delete)
+
+
+def _blast_egg(
+    position: tuple[float, float, float],
+    velocity: tuple[float, float, float],
+) -> None:
+    mesh = bs.getmesh('egg')
+    texs = [
+        bs.gettexture('eggTex1'),
+        bs.gettexture('eggTex2'),
+        bs.gettexture('eggTex3'),
+    ]
+
+    def _spawn_eggs(count: int, speed: float) -> None:
+        for _ in range(count):
+            m = speed
+            pos = (
+                position[0] + random.uniform(-0.3, 0.3),
+                position[1] + random.uniform(-0.1, 0.3),
+                position[2] + random.uniform(-0.3, 0.3),
+            )
+            vel = (
+                velocity[0] + random.uniform(-m, m),
+                velocity[1] + random.uniform(2.0, m * 2),
+                velocity[2] + random.uniform(-m, m),
+            )
+            node = bs.newnode('prop',
+                attrs={
+                    'body': 'capsule',
+                    'position': pos,
+                    'velocity': vel,
+                    'mesh': mesh,
+                    'mesh_scale': random.uniform(0.15, 0.35),
+                    'body_scale': 0.0,
+                    'shadow_size': 0.0,
+                    'gravity_scale': 0.5,
+                    'color_texture': random.choice(texs),
+                    'reflection': 'soft',
+                    'reflection_scale': [0.2],
+                })
+            light = bs.newnode('light',
+                owner=node,
+                attrs={
+                    'intensity': 1,
+                    'volume_intensity_scale': 0.5,
+                    'color': (1.0, 0.4, 0.7),  # pink
+                    'radius': 0.03,
+                })
+            node.connectattr('position', light, 'position')
+            lifetime = random.uniform(0.3, 0.7)
+            bs.timer(lifetime, node.delete)
+            bs.timer(lifetime, light.delete)
+
+    _spawn_eggs(count=15, speed=3.0)
+
+    # Pink flash light
+    slight = bs.newnode(
+        'light',
+        attrs={
+            'position': position,
+            'color': (1.0, 0.4, 0.7),  # pink
+            'radius': 1.0,
+            'intensity': 0.8,
+            'height_attenuated': False,
+        },
+    )
+    bs.animate(slight, 'intensity', {
+        0.0: 0.8, 0.1: 0.3, 0.2: 0.6, 0.35: 0.1, 0.5: 0.0,
+    })
+    bs.timer(0.6, slight.delete)
 
 
 class BombFactory:
@@ -373,6 +887,10 @@ class Blast(bs.Actor):
 
         # Throw in an explosion and flash.
         evel = (velocity[0], max(-1.0, velocity[1]), velocity[2])
+
+        # Check if player has a custom effect that replaces explosion
+        _custom_effect = _get_source_effect(source_player)
+        
         explosion = bs.newnode(
             'explosion',
             attrs={
@@ -384,11 +902,13 @@ class Blast(bs.Actor):
         )
         if self.blast_type == 'ice':
             explosion.color = (0, 0.05, 0.4)
-
-        #if self.blast_type == 'normal':
-            #explosion.color = (0.7, 0.1, 0.3)
-
+        else:
+            pcolor = _get_blast_color(_custom_effect)
+            if pcolor is not None:
+                explosion.color = pcolor
         bs.timer(1.0, explosion.delete)
+
+        _emit_blast_effect(position, velocity, _custom_effect)
 
         if self.blast_type != 'ice':
             bs.emitfx(
@@ -578,21 +1098,23 @@ class Blast(bs.Actor):
             # It looks better if we delay a bit.
             bs.timer(0.05, emit)
 
-        
         if self.blast_type == 'ice':
             lcolor = (0.6, 0.6, 1.0)
+        else:
+            pcolor = _get_blast_color(_custom_effect)
+            lcolor = pcolor if pcolor is not None else (1, 0.3, 0.1)
 
         #elif self.blast_type == 'normal':
             #lcolor = (0.7, 0.1, 0.3)
             
-        else:
-            lcolor = (1, 0.3, 0.1)
+
+        _is_low_intensity = _custom_effect in ('stars', 'colorful', 'egg', 'darkmagic')
 
         light = bs.newnode(
             'light',
             attrs={
                 'position': position,
-                'volume_intensity_scale': 10.0,
+                'volume_intensity_scale': 1 if _is_low_intensity else 10.0,
                 'color': lcolor,
             },
         )
@@ -604,7 +1126,7 @@ class Blast(bs.Actor):
             scorch_radius *= 1.15
             scl *= 3.0
 
-        iscale = 1.6
+        iscale = 0.2 if _is_low_intensity else 1.6
         bs.animate(
             light,
             'intensity',
@@ -730,7 +1252,7 @@ class Bomb(bs.Actor):
         velocity: Sequence[float] = (0.0, 0.0, 0.0),
         bomb_type: str = 'normal',
         blast_radius: float = 2.0,
-        bomb_scale: float = 1.0,
+        bomb_scale: float = 0.2,
         source_player: bs.Player | None = None,
         owner: bs.Node | None = None,
     ):
