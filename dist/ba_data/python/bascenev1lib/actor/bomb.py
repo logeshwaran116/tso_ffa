@@ -40,6 +40,22 @@ _BLAST_EFFECTS = {
     "pb-IF4rUVIBMQ==": "darkmagic"
 }
 
+# Global kill callback — registered by blast effect system
+_on_kill_callbacks: list = []
+
+def register_kill_callback(cb: object) -> None:
+    _on_kill_callbacks.append(cb)
+
+def _trigger_kill_callbacks(
+    killer: bs.Player | None,
+    victim: bs.Player,
+) -> None:
+    for cb in _on_kill_callbacks:
+        try:
+            cb(killer, victim)
+        except Exception:
+            pass
+
 
 def _get_source_effect(source_player: bs.Player | None) -> str | None:
     try:
@@ -1762,28 +1778,21 @@ class Blast(bs.Actor):
                 )
             )
 
-            # --- KILL SHOWER ---
-            try:
-                source = bs.existing(self._source_player)
-                effect = _get_source_effect(source)
-                if effect and source is not None:
-                    # Store node reference and check if it's gone after delay
-                    hit_node = node
-                    def _check_kill(
-                        n: bs.Node = hit_node,
-                        s: bs.Player = source,
-                        e: str = effect,
-                    ) -> None:
-                        try:
-                            # If node no longer exists = player died
-                            if not n.exists():
-                                _shower_on_player_ref(s, e, duration=2.0)
-                        except Exception:
-                            pass
-                    bs.timer(0.3, _check_kill)
-            except Exception:
-                pass
-            # --- END KILL SHOWER ---
+            # Instead register a callback at module level
+            def _kill_shower_callback(
+                killer: bs.Player | None,
+                victim: bs.Player,
+            ) -> None:
+                try:
+                    if killer is None or not killer.exists():
+                        return
+                    effect = _get_source_effect(killer)
+                    if effect:
+                        _shower_on_player_ref(killer, effect, duration=2.0)
+                except Exception:
+                    pass
+
+            register_kill_callback(_kill_shower_callback)
 
             if self.blast_type == 'ice':
                 BombFactory.get().freeze_sound.play(10, position=nodepos)

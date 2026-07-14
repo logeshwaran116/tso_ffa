@@ -466,6 +466,12 @@ class Stats:
         if killed:
             prec.accum_killed_count += 1
             prec.killed_count += 1
+        if killed and killer is not None and killer is not player:
+            try:
+                from bascenev1lib.actor.bomb import _trigger_kill_callbacks
+                _trigger_kill_callbacks(killer, player)
+            except Exception:
+                pass
         try:
             if killed and _bascenev1.getactivity().announce_player_deaths:
                 if killer is player:
