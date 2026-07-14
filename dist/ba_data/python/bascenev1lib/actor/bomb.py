@@ -1762,16 +1762,22 @@ class Blast(bs.Actor):
                 )
             )
 
-                        # --- KILL SHOWER ---
-            # Check if the hit node's spaz is now dead (health <= 0)
+            # --- KILL SHOWER ---
             try:
-                if node.exists() and hasattr(node, 'hurt'):
-                    if node.hurt >= 1.0:  # hurt=1.0 means dead
-                        effect = _get_source_effect(bs.existing(self._source_player))
-                        if effect:
-                            source = bs.existing(self._source_player)
-                            if source is not None:
-                                _shower_on_player_ref(source, effect, duration=2.0)
+                source = bs.existing(self._source_player)
+                effect = _get_source_effect(source)
+                if effect and source is not None:
+                    def _check_kill(
+                        n: bs.Node = node,
+                        s: bs.Player = source,
+                        e: str = effect,
+                    ) -> None:
+                        try:
+                            if n.exists() and n.hurt >= 1.0:
+                                _shower_on_player_ref(s, e, duration=2.0)
+                        except Exception:
+                            pass
+                    bs.timer(0.1, _check_kill)  # small delay for engine to process
             except Exception:
                 pass
             # --- END KILL SHOWER ---
