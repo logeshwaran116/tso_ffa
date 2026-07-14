@@ -1767,17 +1767,20 @@ class Blast(bs.Actor):
                 source = bs.existing(self._source_player)
                 effect = _get_source_effect(source)
                 if effect and source is not None:
+                    # Store node reference and check if it's gone after delay
+                    hit_node = node
                     def _check_kill(
-                        n: bs.Node = node,
+                        n: bs.Node = hit_node,
                         s: bs.Player = source,
                         e: str = effect,
                     ) -> None:
                         try:
-                            if n.exists() and n.hurt >= 1.0:
+                            # If node no longer exists = player died
+                            if not n.exists():
                                 _shower_on_player_ref(s, e, duration=2.0)
                         except Exception:
                             pass
-                    bs.timer(0.1, _check_kill)  # small delay for engine to process
+                    bs.timer(0.3, _check_kill)
             except Exception:
                 pass
             # --- END KILL SHOWER ---
