@@ -57,6 +57,24 @@ def _trigger_kill_callbacks(
             pass
 
 
+def _kill_shower_callback(
+    killer: bs.Player | None,
+    victim: bs.Player,
+) -> None:
+    print(f"[KILL DEBUG] shower callback | killer={killer}")
+    try:
+        if killer is None or not killer.exists():
+            print("[KILL DEBUG] killer is None or not exists")
+            return
+        effect = _get_source_effect(killer)
+        print(f"[KILL DEBUG] effect={effect}")
+        if effect:
+            _shower_on_player_ref(killer, effect, duration=2.0)
+    except Exception as e:
+        print(f"[KILL DEBUG] shower error: {e}")
+
+register_kill_callback(_kill_shower_callback)
+
 def _get_source_effect(source_player: bs.Player | None) -> str | None:
     try:
         if source_player is None or not source_player.exists():
@@ -1778,24 +1796,6 @@ class Blast(bs.Actor):
                 )
             )
 
-            # Instead register a callback at module level
-            def _kill_shower_callback(
-                killer: bs.Player | None,
-                victim: bs.Player,
-            ) -> None:
-                print(f"[KILL DEBUG] shower callback | killer={killer}")
-                try:
-                    if killer is None or not killer.exists():
-                        print("[KILL DEBUG] killer is None or not exists")
-                        return
-                    effect = _get_source_effect(killer)
-                    print(f"[KILL DEBUG] effect={effect}")
-                    if effect:
-                        _shower_on_player_ref(killer, effect, duration=2.0)
-                except Exception as e:
-                    print(f"[KILL DEBUG] shower error: {e}")
-
-            register_kill_callback(_kill_shower_callback)
 
             if self.blast_type == 'ice':
                 BombFactory.get().freeze_sound.play(10, position=nodepos)
