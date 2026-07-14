@@ -460,18 +460,21 @@ class Stats:
         killer: bascenev1.Player | None = None,
     ) -> None:
         """Should be called when a player is killed."""
+        # DEBUG
+        print(f"[KILL DEBUG] player_was_killed called | killed={killed} | killer={killer}")
+        try:
+            from bascenev1lib.actor.bomb import _trigger_kill_callbacks
+            print(f"[KILL DEBUG] triggering callbacks | killer={killer}")
+            _trigger_kill_callbacks(killer, player)
+        except Exception as e:
+            print(f"[KILL DEBUG] callback error: {e}")
+        # END DEBUG
         name = player.getname()
         prec = self._player_records[name]
         prec.streak = 0
         if killed:
             prec.accum_killed_count += 1
             prec.killed_count += 1
-        if killed and killer is not None and killer is not player:
-            try:
-                from bascenev1lib.actor.bomb import _trigger_kill_callbacks
-                _trigger_kill_callbacks(killer, player)
-            except Exception:
-                pass
         try:
             if killed and _bascenev1.getactivity().announce_player_deaths:
                 if killer is player:
