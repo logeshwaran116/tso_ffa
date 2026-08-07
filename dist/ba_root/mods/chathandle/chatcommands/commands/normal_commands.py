@@ -39,7 +39,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
         fetch_send_stats(accountid, clientid)
 
     elif command in ['list', 'l']:
-        list(clientid)
+        list_show(clientid)
 
     elif command in ['uniqeid', 'id', 'pb-id', 'pb', 'accountid']:
         accountid_request(arguments, clientid, accountid)
@@ -167,12 +167,20 @@ def pingall(clientid):
     send(list, clientid)
 
 
-def list(clientid):
-    """Returns The List Of ALL Connected Players: PID, CID, Username, IGN"""
+def list_show(clientid):
+    """Returns The List Of Players Clientid and index"""
+
+    p = u'{0:^16}{1:^15}{2:^10}'
+    seprator = '\n______________________________\n'
+
+    list = p.format('Name', 'Client ID', 'Player ID') + seprator
     session = bs.get_foreground_host_session()
-    print(f"[DEBUG] sessionplayers: {list(session.sessionplayers)}")
-    for i, sp in enumerate(session.sessionplayers):
-        print(f"[DEBUG] #{i}: {sp!r} name={sp.getname(icon=False)}")
+
+    for index, player in enumerate(session.sessionplayers):
+        list += p.format(player.getname(icon=False),
+                         player.inputdevice.client_id, index) + "\n"
+
+    send(list, clientid)
 
 
 def accountid_request(arguments, clientid, accountid):
