@@ -168,20 +168,46 @@ def pingall(clientid):
 
 
 def list_show(clientid):
-    """Returns The List Of Players Clientid and index"""
+    """Returns The List Of ALL Connected Players: PID, CID, Username, IGN"""
+    try:
+        p = u'{0:^6}{1:^12}{2:^18}{3:^18}'
+        seprator = '\n' + ('-' * 90)
+        listtext = [p.format('PID', 'CID', 'Username', 'IGN') + seprator]
 
-    p = u'{0:^16}{1:^15}{2:^10}'
-    seprator = '\n______________________________\n'
+        # 1. Fetch sessionplayers, PID = their position in this list.
+        session = bs.get_foreground_host_session()
+        sp_by_name_and_cid = {}
+        if session is not None:
+            for pid, sp in enumerate(session.sessionplayers):
+                try:
+                    name = sp.getname(icon=False)
+                    cid = sp.inputdevice.client_id
+                    sp_by_name_and_cid[(name, cid)] = pid
+                except Exception:
+                    continue
 
-    list = p.format('Name', 'Client ID', 'Player ID') + seprator
-    session = bs.get_foreground_host_session()
+        # 2. Fetch roster, match each entry against sessionplayers by name + client_id.
+        for ros in bs.get_game_roster():
+            if ros.get('client_id') == -1:
+                continue  # skip the internal BCS server/host pseudo-account
 
-    for index, player in enumerate(session.sessionplayers):
-        list += p.format(player.getname(icon=False),
-                         player.inputdevice.client_id, index) + "\n"
+            cid = ros.get('client_id', 'N/A')
+            username = ros.get('display_string') or 'N/A'
+            players = ros.get('players') or []
 
-    send(list, clientid)
+            if players:
+                for player in players:
+                    ign = player.get('name_full') or 'N/A'
+                    # Match by (ign, cid) against sessionplayers' (name, client_id).
+                    pid = sp_by_name_and_cid.get((ign, cid), 'N/A')
+                    listtext.append(p.format(pid, cid, username, ign))
+            else:
+                listtext.append(p.format('N/A', cid, username, 'N/A'))
 
+        send("\n".join(listtext), clientid)
+    except Exception:
+        import traceback
+        traceback.print_exc()
 
 def accountid_request(arguments, clientid, accountid):
     """Returns The Account Id Of Players"""
