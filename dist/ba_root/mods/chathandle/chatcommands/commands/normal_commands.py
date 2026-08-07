@@ -168,19 +168,36 @@ def pingall(clientid):
 
 
 def list(clientid):
-    """Returns The List Of Players Clientid and index"""
+    """Returns The List Of ALL Connected Players: PID, CID, Username, IGN"""
+    try:
+        p = u'{0:^6}{1:^12}{2:^18}{3:^18}'
+        seprator = '\n' + ('-' * 90)
 
-    p = u'{0:^16}{1:^15}{2:^10}'
-    seprator = '\n______________________________\n'
+        listtext = [p.format('PID', 'CID', 'Username', 'IGN') + seprator]
 
-    list = p.format('Name', 'Client ID', 'Player ID') + seprator
-    session = bs.get_foreground_host_session()
+        roster = [ros for ros in bs.get_game_roster() if ros.get('client_id') != -1]
 
-    for index, player in enumerate(session.sessionplayers):
-        list += p.format(player.getname(icon=False),
-                         player.inputdevice.client_id, index) + "\n"
+        # Count total players across all rosters
+        total_players = sum(len(ros.get('players') or []) for ros in roster)
+        pid = total_players - 1   # start from max PID
 
-    send(list, clientid)
+        for ros in roster:
+            cid = ros.get('client_id', 'N/A')
+            username = ros.get('display_string') or 'N/A'
+
+            players = ros.get('players') or []
+            if players:
+                for player in players:
+                    ign = player.get('name_full', 'N/A')
+                    listtext.append(p.format(pid, cid, username, ign))
+                    pid = max(pid - 1, 0)   # decrement but never below 0
+            else:
+                listtext.append(p.format('N/A', cid, username, 'N/A'))
+
+        send("\n".join(listtext), clientid)
+    except Exception:
+        import traceback
+        traceback.print_exc()
 
 
 def accountid_request(arguments, clientid, accountid):
