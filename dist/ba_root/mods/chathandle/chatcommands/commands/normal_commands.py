@@ -185,19 +185,21 @@ def list_show(clientid):
                     sp_by_name_and_cid[(name, cid)] = pid
                 except Exception:
                     continue
-
+        print(sp_by_name_and_cid)
+        print("-"*20)
         # 2. Fetch roster, match each entry against sessionplayers by name + client_id.
         for ros in bs.get_game_roster():
             if ros.get('client_id') == -1:
                 continue  # skip the internal BCS server/host pseudo-account
-
+            print(ros)
+            print("-"*20)
             cid = ros.get('client_id', 'N/A')
             username = ros.get('display_string') or 'N/A'
             players = ros.get('players') or []
 
             if players:
                 for player in players:
-                    ign = player.get('name_full') or 'N/A'
+                    ign = player.get('name') or 'N/A'
                     # Match by (ign, cid) against sessionplayers' (name, client_id).
                     pid = sp_by_name_and_cid.get((ign, cid), 'N/A')
                     listtext.append(p.format(pid, cid, username, ign))
