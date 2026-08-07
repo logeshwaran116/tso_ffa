@@ -461,13 +461,14 @@ class Stats:
     ) -> None:
         """Should be called when a player is killed."""
         # DEBUG
-        print(f"[KILL DEBUG] player_was_killed called | killed={killed} | killer={killer}")
+        #print(f"[KILL DEBUG] player_was_killed called | killed={killed} | killer={killer}")
         try:
             from bascenev1lib.actor.bomb import _trigger_kill_callbacks
-            print(f"[KILL DEBUG] triggering callbacks | killer={killer}")
+            #print(f"[KILL DEBUG] triggering callbacks | killer={killer}")
             _trigger_kill_callbacks(killer, player)
         except Exception as e:
-            print(f"[KILL DEBUG] callback error: {e}")
+            pass
+            #print(f"[KILL DEBUG] callback error: {e}")
         # END DEBUG
         name = player.getname()
         prec = self._player_records[name]

@@ -61,17 +61,18 @@ def _kill_shower_callback(
     killer: bs.Player | None,
     victim: bs.Player,
 ) -> None:
-    print(f"[KILL DEBUG] shower callback | killer={killer}")
+    #print(f"[KILL DEBUG] shower callback | killer={killer}")
     try:
         if killer is None or not killer.exists():
-            print("[KILL DEBUG] killer is None or not exists")
+            #print("[KILL DEBUG] killer is None or not exists")
             return
         effect = _get_source_effect(killer)
-        print(f"[KILL DEBUG] effect={effect}")
+        #print(f"[KILL DEBUG] effect={effect}")
         if effect:
             _shower_on_player_ref(killer, effect, duration=2.0)
     except Exception as e:
-        print(f"[KILL DEBUG] shower error: {e}")
+        pass
+        #print(f"[KILL DEBUG] shower error: {e}")
 
 register_kill_callback(_kill_shower_callback)
 
