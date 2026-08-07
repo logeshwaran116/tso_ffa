@@ -175,22 +175,20 @@ def list(clientid):
 
         listtext = [p.format('PID', 'CID', 'Username', 'IGN') + seprator]
 
-        roster = [ros for ros in bs.get_game_roster() if ros.get('client_id') != -1]
-
-        # Count total players across all rosters
-        total_players = sum(len(ros.get('players') or []) for ros in roster)
-        pid = total_players - 1   # start from max PID
-
-        for ros in roster:
+        for ros in bs.get_game_roster():
+            if ros.get('client_id') == -1:
+                continue  # skip the internal BCS server/host pseudo-account
+            print(ros)
+            print('-'*20)
             cid = ros.get('client_id', 'N/A')
             username = ros.get('display_string') or 'N/A'
 
             players = ros.get('players') or []
             if players:
                 for player in players:
+                    pid = player.get('id', 'N/A')
                     ign = player.get('name_full', 'N/A')
                     listtext.append(p.format(pid, cid, username, ign))
-                    pid = max(pid - 1, 0)   # decrement but never below 0
             else:
                 listtext.append(p.format('N/A', cid, username, 'N/A'))
 
@@ -198,7 +196,6 @@ def list(clientid):
     except Exception:
         import traceback
         traceback.print_exc()
-
 
 def accountid_request(arguments, clientid, accountid):
     """Returns The Account Id Of Players"""
