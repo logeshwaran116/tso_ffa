@@ -21,7 +21,7 @@ from bascenev1lib import gameutils
 Commands = ['recents','banlist', 'info', 'createteam', 'showid', 'hideid', 'lm', 'gp',
             'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban',
             'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv',
-            'dv', 'pause', 'tint',
+            'dv', 'pause', 'tint','settest',
             'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand',
             'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag',
             'customtag', 'customeffect', 'removeeffect', 'removetag', 'add',
@@ -51,6 +51,8 @@ def ExcelCommand(command, arguments, clientid, accountid):
     match command:
         case 'recents':
             get_recents(clientid)
+        case 'settest':
+            set_test()
         case 'info'|'i':
             get_player_info(arguments, clientid)
         case 'maxplayers' | 'max':
@@ -2101,3 +2103,15 @@ def change_lobby_check_time(arguments):
     settings["white_list"]["lobbychecktime"] = argument
     setting.commit(settings)
     bs.chatmessage(f"lobby check time is {argument} now")
+
+
+def set_test():
+    try:
+        data = setting.get_settings_data()
+        import json
+        with open('settest.json', 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+        print("dump setting data done")
+    except Exception:
+        import traceback
+        traceback.print_exc()
