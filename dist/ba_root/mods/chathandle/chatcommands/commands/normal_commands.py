@@ -172,9 +172,8 @@ def list_show(clientid):
     try:
         p = u'{0:^6}{1:^12}{2:^18}{3:^18}'
         seprator = '\n' + ('-' * 90)
-        listtext = [p.format('PID', 'CID', 'Username', 'IGN') + seprator]
+        header = p.format('PID', 'CID', 'Username', 'IGN') + seprator
 
-        # 1. Fetch sessionplayers, PID = their position in this list.
         session = bs.get_foreground_host_session()
         sp_by_name_and_cid = {}
         if session is not None:
@@ -186,10 +185,11 @@ def list_show(clientid):
                 except Exception:
                     continue
 
-        # 2. Fetch roster, match each entry against sessionplayers by name + client_id.
+        rows = []  # list of (sort_key, formatted_line)
+
         for ros in bs.get_game_roster():
             if ros.get('client_id') == -1:
-                continue  # skip the internal BCS server/host pseudo-account
+                continue
 
             cid = ros.get('client_id', 'N/A')
             username = ros.get('display_string') or 'N/A'
@@ -198,11 +198,14 @@ def list_show(clientid):
             if players:
                 for player in players:
                     ign = player.get('name') or 'N/A'
-                    # Match by (ign, cid) against sessionplayers' (name, client_id).
                     pid = sp_by_name_and_cid.get((ign, cid), 'N/A')
-                    listtext.append(p.format(pid, cid, username, ign))
+                    sort_key = pid if isinstance(pid, int) else float('inf')
+                    rows.append((sort_key, p.format(pid, cid, username, ign)))
             else:
-                listtext.append(p.format('N/A', cid, username, 'N/A'))
+                rows.append((float('inf'), p.format('N/A', cid, username, 'N/A')))
+
+        rows.sort(key=lambda r: r[0])
+        listtext = [header] + [line for _, line in rows]
 
         send("\n".join(listtext), clientid)
     except Exception:
