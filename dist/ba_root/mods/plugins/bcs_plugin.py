@@ -148,6 +148,9 @@ def update_server_settings():
         import json
         with open('test.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
+        response = {
+            'message': 'Settings updated successfully, server may need restart'}
+        return jsonify(response), 201
     except Exception as e:
         import traceback
         traceback.print_exc()
