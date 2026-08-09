@@ -29,7 +29,7 @@ import os
 import setting
 data = setting.get_settings_data()
 db = data.get("discordbot", {})
-LEADERBOARD_CHANNEL_ID = db.get("leaderboardChannelID",None)
+LEADERBOARD_CHANNEL_ID = int(db.get("leaderboardChannelID",None))
 
 
 
