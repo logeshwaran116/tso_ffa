@@ -180,8 +180,8 @@ def update_perks(custom):
         print(custom.keys())
         print(ct_list)
 
-        # The web api returns the data as a single string
-        # ex: pb-1: "Tag,7"
+        # The web api returns the data as a list and string
+        # ex: pb-1: "Tag,7" ot pb:2 = ['tag', 7]
         # so we converting str to dict for our use case
         for pb_id, value in ct_list.items():
             if isinstance(value, str): 
@@ -194,6 +194,16 @@ def update_perks(custom):
                         ct_dict[pb_id] = {'tag': parts[0], 'anim_id': int(parts[1])}
                     except ValueError:
                         ct_dict[pb_id] = {'tag': parts[0], 'anim_id': 1}
+
+            elif isinstance(value, list):
+            # List form [tag, anim_id]
+                if len(value) == 1:
+                    ct_dict[pb_id] = {'tag': value[0], 'anim_id': 1}
+                elif len(value) >= 2:
+                    try:
+                        ct_dict[pb_id] = {'tag': value[0], 'anim_id': int(value[1])}
+                    except ValueError:
+                        ct_dict[pb_id] = {'tag': value[0], 'anim_id': 1}
 
         custom['customtag'] = ct_dict
         pdata.update_custom_perks(custom)
