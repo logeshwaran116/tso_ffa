@@ -76,7 +76,7 @@ LOGS_CHANNEL_ID = 1467401251561017384
 ERROR_LOG_CHANNEL_ID = 1502641543193038848  # Channel for errors/warnings
 LIVE_STATS_CHANNEL_ID = 1467399612288471162
 DIRECT_CMD_CHANNEL_ID = 1467402520828706817
-ROLE_CMD_CHANNEL_IDS = [1467421373617143985]
+ROLE_CMD_CHANNEL_ID = [1467421373617143985]
 ROLE_CMD_CHANNEL_NAMES = {"roles", "role-commands"}
 GAME_INFO_CHANNEL_ID = 1518869292479807530
 COMPLAINTS_CHANNEL_ID = 1468269892925915166
@@ -165,7 +165,7 @@ def push_error_log(msg):
 def _load_channel_ids():
     """Load all Discord channel IDs from setting.json."""
     global LOGS_CHANNEL_ID, LIVE_STATS_CHANNEL_ID, DIRECT_CMD_CHANNEL_ID
-    global ROLE_CMD_CHANNEL_IDS, GAME_INFO_CHANNEL_ID, COMPLAINTS_CHANNEL_ID
+    global ROLE_CMD_CHANNEL_ID, GAME_INFO_CHANNEL_ID, COMPLAINTS_CHANNEL_ID
     global COMPLAINT_STAFF_ROLE_ID, CHATLIST_CHANNEL_ID
     try:
         import setting
@@ -179,8 +179,7 @@ def _load_channel_ids():
         if db.get("directCmdChannelID"):
             DIRECT_CMD_CHANNEL_ID = int(db["directCmdChannelID"])
         if db.get("roleCmdChannelIds"):
-            ids = db["roleCmdChannelIds"]
-            ROLE_CMD_CHANNEL_IDS = [int(x) for x in ids] if isinstance(ids, list) else [int(ids)]
+            ROLE_CMD_CHANNEL_ID = int(db["roleCmdChannelIds"])
         if db.get("gameInfoChannelID"):
             GAME_INFO_CHANNEL_ID = int(db["gameInfoChannelID"])
         if db.get("complaintsChannelID"):
@@ -540,7 +539,7 @@ def send_complaint_embed(
 
 def _is_role_channel(ch: discord.abc.GuildChannel) -> bool:
     try:
-        if ch.id in ROLE_CMD_CHANNEL_IDS:
+        if ch.id == ROLE_CMD_CHANNEL_ID:
             return True
     except Exception:
         pass
@@ -1373,12 +1372,11 @@ async def verify_channel():
     
     # Verify role channels
     try:
-        for cid in ROLE_CMD_CHANNEL_IDS:
-            ch = client.get_channel(cid)
-            if ch:
-                print(f"Role channel ready: #{ch.name} ({cid})")
-            else:
-                print(f"Warning: Role channel not found for ID {cid}")
+        ch = client.get_channel(ROLE_CMD_CHANNEL_ID)
+        if ch:
+            print(f"Role channel ready: #{ch.name} ({ROLE_CMD_CHANNEL_ID})")
+        else:
+            print(f"Warning: Role channel not found for ID {ROLE_CMD_CHANNEL_ID}")
     except Exception as e:
         print(f"Role channel verification error: {e}")
 

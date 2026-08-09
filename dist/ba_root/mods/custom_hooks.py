@@ -224,9 +224,6 @@ def import_discord_bot() -> None:
     if settings["discordbot"]["enable"]:
         from features import discord_bot
         discord_bot.token = settings["discordbot"]["token"]
-        discord_bot.liveStatsChannelID = settings["discordbot"][
-            "liveStatsChannelID"]
-        discord_bot.logsChannelID = settings["discordbot"]["logsChannelID"]
         discord_bot.liveChat = settings["discordbot"]["liveChat"]
         discord_bot.BsDataThread()
         discord_bot.init()

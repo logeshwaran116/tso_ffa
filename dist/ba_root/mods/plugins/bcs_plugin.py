@@ -145,15 +145,13 @@ def update_perks():
 def update_server_settings():
     try:
         data = request.get_json()
-        import json
-        with open('test.json', 'w') as json_file:
-            json.dump(data, json_file, indent=4)
+        bombsquad_service.update_server_settings(data)
         response = {
             'message': 'Settings updated successfully, server may need restart'}
         return jsonify(response), 201
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        return jsonify(
+            {'message': 'Error processing request', 'error': str(e)}), 400
 
 
 @app.route('/api/db-list', methods=['GET'])
