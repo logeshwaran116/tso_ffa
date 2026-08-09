@@ -4,7 +4,7 @@
 # https://discord.gg/ucyaesh
 
 
-# ba_meta require api 8
+# ba_meta require api 9
 
 from __future__ import annotations
 
@@ -18,8 +18,7 @@ if TYPE_CHECKING:
 
 
 class State:
-    def __init__(self, bomb=None, grab=False, punch=False, curse=False,
-                 required=False, final=False, name=''):
+    def __init__(self, bomb=None, grab=False, punch=False, curse=False, required=False, final=False, name=''):
         self.bomb = bomb
         self.grab = grab
         self.punch = punch
@@ -37,8 +36,11 @@ class State:
                                         enable_bomb=self.bomb,
                                         enable_pickup=self.grab)
         if self.curse:
-            spaz.curse_time = 0
-            spaz.curse()
+            try:
+                spaz.curse_time = -1
+                spaz.curse()
+            except:
+                pass
         if self.bomb:
             spaz.bomb_type = self.bomb
         spaz.set_score_text(self.name)
@@ -82,7 +84,7 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
     @classmethod
     def get_available_settings(
-        cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
+            cls, sessiontype: Type[bs.Session]) -> List[babase.Setting]:
         settings = [
             bs.IntChoiceSetting(
                 'Time Limit',
@@ -110,8 +112,7 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
             bs.BoolSetting('Epic Mode', default=False)]
         for state in states:
             if not state.required:
-                settings.append(
-                    bs.BoolSetting(state.get_setting(), default=True))
+                settings.append(bs.BoolSetting(state.get_setting(), default=True))
 
         return settings
 
@@ -176,13 +177,10 @@ class ArmsRaceGame(bs.TeamGameActivity[Player, Team]):
 
         if isinstance(msg, bs.PlayerDiedMessage):
             if self.isValidKill(msg):
-                self.stats.player_scored(msg.getkillerplayer(Player), 10,
-                                         kill=True)
+                self.stats.player_scored(msg.getkillerplayer(Player), 10, kill=True)
                 if not msg.getkillerplayer(Player).state.final:
-                    msg.getkillerplayer(Player).state = msg.getkillerplayer(
-                        Player).state.next
-                    msg.getkillerplayer(Player).state.apply(
-                        msg.getkillerplayer(Player).actor)
+                    msg.getkillerplayer(Player).state = msg.getkillerplayer(Player).state.next
+                    msg.getkillerplayer(Player).state.apply(msg.getkillerplayer(Player).actor)
                 else:
                     msg.getkillerplayer(Player).team.score += 1
                     self.end_game()
