@@ -184,12 +184,12 @@ def update_perks(custom):
             if isinstance(value, str): 
                 parts = [v.strip() for v in value.split(',')]
                 if len(parts) == 1:
-                    ct_dict[pb_id] = {'tag':value[0], 'anim_id': 1}
+                    ct_dict[pb_id] = {'tag':parts[0], 'anim_id': 1}
                 elif len(parts) >= 2:
                     try:
-                        ct_dict[pb_id] = {'tag': value[0], 'anim_id': int(value[1])}
+                        ct_dict[pb_id] = {'tag': parts[0], 'anim_id': int(parts[1])}
                     except ValueError:
-                        ct_dict[pb_id] = {'tag': value[0], 'anim_id': 1}
+                        ct_dict[pb_id] = {'tag': parts[0], 'anim_id': 1}
         custom['customtag'] = ct_dict
         pdata.update_custom_perks(custom)
 
