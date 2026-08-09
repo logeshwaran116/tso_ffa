@@ -146,7 +146,11 @@ def update_server_settings(settings):
 def get_roles():
     return pdata.get_roles()
 
-
+# Updated by Sanji both get_perks and update_perks
+# To handle also new animation id feature
+# Now in websiste u can add tag and animation id 
+# In the format of comma seperated yourtag,animid
+# Example: pb-id: SANJI, 10
 def get_perks():
     # TODO wire with spaz_effects to fetch list of effects.
     perks = pdata.get_custom_perks()
@@ -163,7 +167,7 @@ def get_perks():
             ct_list[pb_id] = tag_data
 
         elif isinstance(tag_data, str): # str to list
-            ct_list[pb_id] = [tag_data]
+            ct_list[pb_id] = [p.strip() for p in tag_data.split(',')]
 
     return {"perks": {**perks, "customtag": ct_list},
             "availableEffects": ["spark", "glow", "fairydust", "sparkground",
@@ -177,9 +181,6 @@ def update_perks(custom):
     try:
         ct_list = custom.get('customtag',{})
         ct_dict = {}
-        print(custom.keys())
-        print(ct_list)
-
         # The web api returns the data as a list and string
         # ex: pb-1: "Tag,7" ot pb:2 = ['tag', 7]
         # so we converting str to dict for our use case
