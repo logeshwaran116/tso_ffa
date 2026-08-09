@@ -58,7 +58,7 @@ class SeaBloom(bs.Map):
         data: Dict[str, Any] = {
             'mesh': bs.getmesh('image1x1'),
             'mesh_obs': bs.getmesh('tnt'),
-            'color_texture': bs.gettexture('bikiniBottomMapBGColor'),
+            'color_texture': bs.gettexture('bombColorIce'),
             'bgmesh': bs.getmesh('thePadBG'),
             'bgtex': bs.gettexture('menuBG')
         }

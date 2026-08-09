@@ -286,6 +286,16 @@ class MultiTeamSession(Session):
         if announce_winning_team:
             winning_sessionteam = results.winning_sessionteam
             if winning_sessionteam is not None:
+
+                #----- new winning coin sytem ---
+                try:
+                    from playersdata import pdata
+                    pdata.reward_for_winning(self, winning_sessionteam)
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
+                #------------------------------
+
                 # Have all players celebrate.
                 celebrate_msg = CelebrateMessage(duration=10.0)
                 assert winning_sessionteam.activityteam is not None

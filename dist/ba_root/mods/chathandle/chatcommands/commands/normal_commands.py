@@ -6,20 +6,22 @@ from stats import mystats
 from tools import coins
 from playersdata import pdata
 
+import babase
 import bascenev1 as bs
 from babase._general import Call
 from .handlers import send
 import setting
+from ..handlers import clientid_to_accountid
 
 Commands = [
     'me', 'list', 'uniqeid', 'ping', 'efflist', 'cmdlist', 'pme', 'help',
     'coins', 'wallet', 'claim', 'convert', 'transfer', 'shop', 'coinhelp',
     'tag', 'save', 'savelist', 'rmsave', 'chatlist', 'setmsg', 'sap',
-    'comp', 'la',
+    'comp', 'la',"topcash","top", "rankzone"
 ]
-CommandAliases = ['stats', 'score', 'rank',
+CommandAliases = ['stats', 'score', 'rank', 'rz', 'tc',
                   'myself', 'l', 'id', 'pb-id', 'pb', 'accountid',
-                  'linkedaccount', 'linkedaccounts']
+                  'linkedaccount', 'linkedaccounts', 'topcashers']
 
 
 def ExcelCommand(command, arguments, clientid, accountid):
@@ -106,6 +108,15 @@ def ExcelCommand(command, arguments, clientid, accountid):
     elif command in ['la', 'linkedaccount', 'linkedaccounts']:
         linked_accounts_command(arguments, clientid)
 
+    elif command in ['topcash', 'tc']:
+        topcash(clientid)
+
+    elif command in ['top']:
+        top_players(clientid)
+    elif command in ['rankzone', 'rz']:
+        rank_zone(clientid)
+
+
 
 def get_ping(arguments, clientid):
     if arguments == [] or arguments == ['']:
@@ -133,7 +144,7 @@ def stats(ac_id, clientid):
         balance = 0
     if stats:
         reply = (
-            f"Coins: {balance}\n"
+            f"{babase.charstr(babase.SpecialChar.TOKEN)} Coins: {balance}\n"
             f"Score:{stats['scores']}\n"
             f"Games:{stats['games']}\n"
             f"Kills:{stats['kills']}\n"
@@ -211,6 +222,8 @@ def list_show(clientid):
     except Exception:
         import traceback
         traceback.print_exc()
+
+
 
 def accountid_request(arguments, clientid, accountid):
     """Returns The Account Id Of Players"""
@@ -362,11 +375,7 @@ def show_command_list(clientid):
 
 def show_normal_help(clientid):
     """Show all normal_commands (Commands list) nicely formatted."""
-    try:
-        from . import normal_commands as _nc
-        cmds = list(_nc.Commands)
-    except Exception:
-        cmds = []
+    cmds = Commands
     if not cmds:
         send("No commands available.", clientid)
         return
@@ -405,7 +414,7 @@ def stats_to_clientid(arguments, clid, acid):
                         role_text = "none"
                     reply = (
                         f"\ue048| Name: {fname}\n"
-                        f"\ue048| PB-ID: {stats['aid']}\n"
+                        #f"\ue048| PB-ID: {stats['aid']}\n"
                         f"\ue048| Role: {role_text}\n"
                         f"\ue048| Rank: {stats['rank']}\n"
                         f"\ue048| Score: {stats['scores']}\n"
@@ -509,20 +518,35 @@ def transfer_coins(arguments, from_account: str, clientid: int) -> None:
 
 def shop_command(arguments, account_id: str, clientid: int) -> None:
     EFFECT_PRICES = {
-        'stars': 1500,
-        'rainbow': 1200,
-        'surrounder': 1800,
-        'surrounderhead': 2500,
-        'tagpass': 2000,
-        'spark': 600,
-        'glow': 600,
-        'shine': 550,
-        'metal': 500,
-        'iceground': 600,
+        "tagpass": 2000,
+        "noeffect": 0,
+        "metal": 500,
+        "spark": 600,
+        "iceground": 600,
+        "fire": 800,
+        "splinter": 800,
+        "ice": 900,
+        "slime": 900,
+        "distortion": 1000,
+        "sparkground": 1000,
+        "footprint": 1000,
+        "sweat": 1000,
+        "stars": 1500,
+        "rainbow": 1500,
+        "sweatground": 1500,
+        "fairydust": 2000,
+        "scorch": 2000,
+        "darksn": 2000,
+        "chispitas": 2500,
+        "surrounderhead": 2500,
+        "darkmagic": 4000,
+        "firespark": 4000,
+        "randomcharacter": 5000,
     }
+
     if not arguments or arguments[0] in ['', None, 'list']:
         lines = [f"\ue048 {k}: {v}" for k, v in EFFECT_PRICES.items()]
-        msg = "\ue048 Shop (1-day items):\n" + "\n".join(lines)
+        msg = "\ue048 Shop (3-day items):\n" + "\n".join(lines)
         send(msg, clientid)
         return
     if arguments[0] == 'buy':
@@ -534,15 +558,20 @@ def shop_command(arguments, account_id: str, clientid: int) -> None:
             send("Unknown effect. Try 'shop list'", clientid)
             return
         if eff == 'tagpass':
-            res = coins.buy_tag_pass(account_id, price=EFFECT_PRICES[eff], days=1.0)
+            res = coins.buy_tag_pass(account_id, price=EFFECT_PRICES[eff], days=3.0)
             if res.ok:
-                send("Tag pass purchased. Use /tag <text> once within 1 day.", clientid)
+                send("Tag pass purchased. Use /tag <text> once within 3 day.", clientid)
             else:
                 send(res.message, clientid)
+            return
+        elif eff == 'noeffect':
+            pdata.player_noeffect(account_id)
+            send("Paid effect Removed", clientid)
+            return
         else:
-            res = coins.buy_effect(account_id, eff, price=EFFECT_PRICES[eff], days=1.0)
+            res = coins.buy_effect(account_id, eff, price=EFFECT_PRICES[eff], days=3.0)
             if res.ok:
-                send(f"Effect '{eff}' added for 1 day.", clientid)
+                send(f"Effect '{eff}' added for 3 day.", clientid)
             else:
                 send(res.message, clientid)
         return
@@ -556,9 +585,10 @@ def coin_help(clientid: int) -> None:
         "/convert [ratio] — Convert banked score",
         "/transfer <pb-id|clientid|index> <amount>",
         "/shop list — View items",
-        "/shop buy tagpass — Buy 1-day tag pass",
-        "/shop buy <effect> — Buy 1-day effect",
+        "/shop buy tagpass — Buy 3-day tag pass",
+        "/shop buy <effect> — Buy 3-day effect",
         "/tag <text> — Use tag pass once",
+        "/topcash — Shows top 10 rich players",
     ]
     reply = "\n".join([f"\ue048 {s}" for s in lines])
     send(reply, clientid)
@@ -566,17 +596,16 @@ def coin_help(clientid: int) -> None:
 
 def tag_command(arguments, account_id: str, clientid: int) -> None:
     if not arguments:
-        send("Usage: /tag <text>", clientid)
+        send("Usage: /tag <text> <anim ID>", clientid)
         return
-    tag_text = " ".join([a for a in arguments if a is not None]).strip()
-    if not tag_text:
-        send("Usage: /tag <text>", clientid)
-        return
-    res = coins.consume_tag_pass(account_id, tag_text)
-    if res.ok:
-        send("Tag added successfully for 1 day.", clientid)
-    else:
-        send(res.message, clientid)
+    try:
+        anim_id = int(arguments[-1])
+        arguments = arguments[:-1]
+        tag_text = " ".join(arguments)
+    except:
+        anim_id = 1
+        tag_text = " ".join(arguments)
+    pdata.buy_tag_tagpass(clientid, account_id, tag_text, anim_id)
 
 
 def save_friend(arguments, account_id: str, clientid: int) -> None:
@@ -784,3 +813,32 @@ def set_join_message_command(arguments, from_account_id: str, clientid: int) -> 
         send("Join message saved.", clientid)
     except Exception:
         send("Failed to save join message.", clientid)
+
+
+
+def topcash(clientid):
+    try:
+        cash = pdata.top_cashers(10)
+        send(cash, clientid)
+    except:
+        import traceback
+        traceback.print_exc()
+        send("Error fetching data")    
+
+def top_players(clientid):
+    try:
+        rank = pdata.top_players(10)
+        send(rank, clientid)
+    except:
+        import traceback
+        traceback.print_exc()
+        send("Error fetching player stats.", clientid)
+
+def rank_zone(clientid):
+    try:
+        rank = pdata.rank_zone(clientid_to_accountid(clientid))
+        send(rank, clientid)
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        send("Error fetching your rank.", clientid)

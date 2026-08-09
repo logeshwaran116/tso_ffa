@@ -37,7 +37,7 @@ class State:
                                         enable_bomb=self.bomb,
                                         enable_pickup=self.grab)
         if self.curse:
-            spaz.curse_time = -1
+            spaz.curse_time = 0
             spaz.curse()
         if self.bomb:
             spaz.bomb_type = self.bomb

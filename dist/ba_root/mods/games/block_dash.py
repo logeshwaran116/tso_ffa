@@ -357,7 +357,7 @@ class BlockDashGame(EliminationGame):
         self.wall_count=0
 
     # Gap between walls in seconds - change this to adjust spacing
-    WALL_GAP = 3.0
+    WALL_GAP = 4.0
 
     def _start_continuous_walls(self):
         """Start spawning walls continuously with a fixed gap."""

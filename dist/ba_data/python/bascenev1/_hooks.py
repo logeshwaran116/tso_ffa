@@ -48,8 +48,9 @@ def filter_chat_message(msg: str, client_id: int) -> str | None:
         return chooks.filter_chat_message(msg,client_id)
     except:
         return msg
-def kick_vote_started(by:str,to:str) -> None:
-    print("kick vot started by"+by+" to"+to)
+def kick_vote_started(by: str, to: str) -> None:
+    print("kick vote started by " + by + " to " + to)
+
 
 def local_chat_message(msg: str) -> None:
     classic = babase.app.classic

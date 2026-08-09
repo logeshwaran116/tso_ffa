@@ -87,7 +87,7 @@ class modSetup(babase.Plugin):
         if (settings["useV2Account"]):
 
             if (plus.get_v1_account_state() ==
-                    'signed_in' and plus.get_v1_account_type() == 'V2'):
+                    'signed_in' and plus.get_v1_account_type() == 'V2'):    
                 logging.debug("Account V2 is active")
             else:
                 logging.warning("Account V2 login require ....stay tuned.")
@@ -104,9 +104,12 @@ class modSetup(babase.Plugin):
     def on_app_shutdown(self):
         print("Server shutting down , lets save cache")
         # lets try  threading here
-        # _thread.start_new_thread(pdata.dump_cache, ())
-        # _thread.start_new_thread(notification_manager.dump_cache, ())
-        # print("Done dumping memory")
+        try:
+            _thread.start_new_thread(pdata.dump_cache, ())
+            _thread.start_new_thread(notification_manager.dump_cache, ())
+            print("Done dumping memory")
+        except Exception:
+            logging.error("Error in saving cache", exc_info= True)
 
 
 def score_screen_on_begin(func) -> None:

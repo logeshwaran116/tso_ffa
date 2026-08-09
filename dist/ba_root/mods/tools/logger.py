@@ -71,7 +71,7 @@ def log(msg: str, mtype: str = "sys") -> None:
 
     if mtype == "chat":
         logs.chats.append(msg)
-        if len(logs.chats) > 10:
+        if len(logs.chats) > 2:
             dumplogs(logs.chats, "chat").start()
             logs.chats = []
 

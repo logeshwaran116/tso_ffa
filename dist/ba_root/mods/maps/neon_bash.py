@@ -95,10 +95,20 @@ class NeonBash(bs.Map):
                                     attrs={'shape':'box',
                                     'position':(0,5,0),
                                     'color':(1,1,1),
-                                    'opacity':1,'draw_beauty':True,'additive':False,'size':[15.5,0.05,5.3]})
-        bs.animate_array(self.zone, 'color', 3,{0:(0,0,0), 1:(0.502, 1, 0.859)},loop= False)
+                                    'opacity':1,'draw_beauty':True,'additive':True,'size':[15.5,0.05,5.3]})
+        # Neon wave — hot pink → electric purple → cyan → magenta, looping
+        bs.animate_array(self.zone, 'color', 3,
+            {
+                0.0: (1.0, 0.2, 0.9),   # hot pink
+                0.75: (0.6, 0.1, 1.0),  # electric purple
+                1.5: (0.1, 0.9, 1.0),   # neon cyan
+                2.25: (1.0, 0.1, 0.6),  # magenta
+                3.0: (1.0, 0.2, 0.9),   # back to hot pink
+            },
+            loop=True)
+        bs.animate_array(self.zone, 'position', 3,{0.0: (0, 5, 0), 1.0: (0, 5.3, 0), 2.0: (0, 5, 0)},loop=True)
                             
-        self.zone = bs.newnode('locator',
+        '''self.zone = bs.newnode('locator',
                                     attrs={'shape':'box',
                                     'position':(0,3,0),
                                     'color':(1,1,1),
@@ -110,7 +120,7 @@ class NeonBash(bs.Map):
                                     'position':(0,1,0),
                                     'color':(1,1,1),
                                     'opacity':1,'draw_beauty':True,'additive':False,'size':[15.5,0.05,5.3]})
-        bs.animate_array(self.zone, 'color', 3,{0:(0,0,0), 1:(0.502, 1, 0.859)},loop= False)
+        bs.animate_array(self.zone, 'color', 3,{0:(0,0,0), 1:(0.502, 1, 0.859)},loop= False)'''
 
         for m_pos1 in [(-5,3,0),(0,3,0),(5,3,0)]:   
             self.mv_center = bs.newnode('prop',

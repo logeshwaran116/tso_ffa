@@ -1,4 +1,4 @@
-from .handlers import send
+from .handlers import send, clientid_to_myself
 from tools import playlist
 import random
 
@@ -16,20 +16,21 @@ import bascenev1 as bs
 from tools import logger
 from tools import coins
 from bascenev1lib import gameutils
-
+from bascenev1lib.actor.zoomtext import ZoomText
+from ..handlers import clientid_to_accountid, clientid_to_username
 
 Commands = ['recents','banlist', 'info', 'createteam', 'showid', 'hideid', 'lm', 'gp',
             'party', 'quit', 'kickvote', 'maxplayers', 'playlist', 'ban',
             'kick', 'remove', 'end', 'quit', 'mute', 'unmute', 'slowmo', 'nv',
-            'dv', 'pause', 'tint','settest',
+            'dv', 'pause', 'tint', 'roleanim', "changeanim", "showeff",
             'cameramode', 'createrole', 'addrole', 'removerole', 'addcommand',
-            'addcmd', 'removecommand', 'getroles', 'removecmd', 'changetag',
+            'addcmd', 'removecommand', 'getroles', 'removecmd', 'roletag',
             'customtag', 'customeffect', 'removeeffect', 'removetag', 'add',
             'spectators', 'lobbytime','acl', 'givecoins', 'unban', 'unkick',
-            'hug','target','hugall','control','exchange','icy','spaz','spazall','zombie','zombieall','tex','texall','playsound','ooh','zm','vcl',
+            'hug','target','hugall','control','exchange','icy','spaz','spazall','zombie','zombieall','tex','texall','playsound','ooh','cheer','zm','vcl',
             'dbc','d_bomb_count','default_bomb_count','dbt','d_bomb_type','default_bomb_type','floater','healer','rmhealer','attack']
 CommandAliases = ['pme','max', 'rm', 'next', 'restart', 'mutechat', 'unmutechat',
-                  'sm',
+                  'sm', 'ce', 'ct', 'rt', 're', 'ar', 'rr',
                   'slow', 'night', 'day', 'pausegame', 'camera_mode',
                   'rotate_camera', 'exchange','control', 'effect','say','hug','hugall','control','exchange','icy','cc','spaz','ccall','spazall','box','boxall','mbox','imp','drop','superjump','gift','kickall','acl',
                   'prot','protect','zoommessage','admincmdlist','vipcmdlist']
@@ -51,8 +52,6 @@ def ExcelCommand(command, arguments, clientid, accountid):
     match command:
         case 'recents':
             get_recents(clientid)
-        case 'settest':
-            set_test()
         case 'info'|'i':
             get_player_info(arguments, clientid)
         case 'maxplayers' | 'max':
@@ -101,9 +100,9 @@ def ExcelCommand(command, arguments, clientid, accountid):
             rotate_camera()
         case 'createrole':
             create_role(arguments)
-        case 'addrole':
+        case 'addrole' | 'ar':
             add_role_to_player(arguments)
-        case 'removerole':
+        case 'removerole' | 'rr':
             remove_role_from_player(arguments)
         case 'getroles':
             get_roles_of_player(arguments, clientid)
@@ -111,16 +110,22 @@ def ExcelCommand(command, arguments, clientid, accountid):
             add_command_to_role(arguments)
         case 'removecommand' | 'removecmd'|'rc':
             remove_command_to_role(arguments)
-        case 'changetag':
+        case 'roletag':
             change_role_tag(arguments)
+        case 'roleanim':
+            change_role_anim(arguments)
+        case 'changeanim':
+            changeanim(arguments)
         case 'customtag'|'ct':
             set_custom_tag(arguments)
         case 'customeffect' | 'effect'|'ce':
             set_custom_effect(arguments)
-        case 'removetag':
+        case 'removetag' | 'rt':
             remove_custom_tag(arguments)
-        case 'removeeffect':
+        case 'removeeffect' | 're':
             remove_custom_effect(arguments)
+        case 'showeff':
+            show_effect(arguments)
         case 'spectators':
             spectators(arguments)
         case 'lobbytime':
@@ -189,16 +194,14 @@ def ExcelCommand(command, arguments, clientid, accountid):
             play_sound(arguments, clientid)
         case 'ooh':
             play_ooh_sound(arguments)
+        case 'cheer':
+            play_cheer_sound(arguments)
         case 'zm' | 'zoommessage':
             zm(arguments, clientid)
         case 'vcl' | 'vipcmdlist':
             vcl(arguments, clientid)
         case 'prot' | 'protect':
             protect_players(arguments, clientid)
-        case 'dbc' | 'd_bomb_count' | 'default_bomb_count':
-            d_bomb_count(arguments, clientid)
-        case 'dbt' | 'd_bomb_type' | 'default_bomb_type':
-            d_bomb_type(arguments, clientid)
         case 'banlist':
             ban_list(arguments, clientid)
         case 'floater':
@@ -259,15 +262,15 @@ def spazall(arguments, clientid):
                   if appearance_name in valid_appearance_names:               
                       i.actor.node.color_texture = bs.gettexture(appearance_name + "Color")
                       i.actor.node.color_mask_texture = bs.gettexture(appearance_name + "ColorMask")
-                      i.actor.node.head_model = bs.getmodel(appearance_name + "Head")
-                      i.actor.node.torso_model = bs.getmodel(appearance_name + "Torso")
-                      i.actor.node.pelvis_model = bs.getmodel(appearance_name + "Pelvis")
-                      i.actor.node.upper_arm_model = bs.getmodel(appearance_name + "UpperArm")
-                      i.actor.node.forearm_model = bs.getmodel(appearance_name + "ForeArm")
-                      i.actor.node.hand_model = bs.getmodel(appearance_name + "Hand")
-                      i.actor.node.upper_leg_model = bs.getmodel(appearance_name + "UpperLeg")
-                      i.actor.node.lower_leg_model = bs.getmodel(appearance_name + "LowerLeg")
-                      i.actor.node.toes_model = bs.getmodel(appearance_name + "Toes")
+                      i.actor.node.head_mesh = bs.getmesh(appearance_name + "Head")
+                      i.actor.node.torso_mesh = bs.getmesh(appearance_name + "Torso")
+                      i.actor.node.pelvis_mesh = bs.getmesh(appearance_name + "Pelvis")
+                      i.actor.node.upper_arm_mesh = bs.getmesh(appearance_name + "UpperArm")
+                      i.actor.node.forearm_mesh = bs.getmesh(appearance_name + "ForeArm")
+                      i.actor.node.hand_mesh = bs.getmesh(appearance_name + "Hand")
+                      i.actor.node.upper_leg_mesh = bs.getmesh(appearance_name + "UpperLeg")
+                      i.actor.node.lower_leg_mesh = bs.getmesh(appearance_name + "LowerLeg")
+                      i.actor.node.toes_mesh = bs.getmesh(appearance_name + "Toes")
                       i.actor.node.style = appearance_name
                   else:
                       # If the appearance name is not valid, inform the user
@@ -395,7 +398,7 @@ def target(arguments, clientid):
         flo_actor = None
         landmine = None
         try:
-            from chathandle.chatcommands import floater as _flo
+            from ....plugins import floater as _flo
             try:
                 bounds = activity.map.get_def_bound_box('map_bounds')
             except Exception:
@@ -500,7 +503,7 @@ def target(arguments, clientid):
 def spaz(arguments, clientid):
     activity = bs.get_foreground_host_activity()
     a = arguments
-    with bs.Context(activity):
+    with activity.context:
         try:
             if arguments != []:
                 n = int(a[0])
@@ -510,15 +513,15 @@ def spaz(arguments, clientid):
                 if appearance_name in valid_appearance_names:               
                     activity.players[n].actor.node.color_texture = bs.gettexture(appearance_name + "Color")
                     activity.players[n].actor.node.color_mask_texture = bs.gettexture(appearance_name + "ColorMask")
-                    activity.players[n].actor.node.head_model = bs.getmodel(appearance_name + "Head")
-                    activity.players[n].actor.node.torso_model = bs.getmodel(appearance_name + "Torso")
-                    activity.players[n].actor.node.pelvis_model = bs.getmodel(appearance_name + "Pelvis")
-                    activity.players[n].actor.node.upper_arm_model = bs.getmodel(appearance_name + "UpperArm")
-                    activity.players[n].actor.node.forearm_model = bs.getmodel(appearance_name + "ForeArm")
-                    activity.players[n].actor.node.hand_model = bs.getmodel(appearance_name + "Hand")
-                    activity.players[n].actor.node.upper_leg_model = bs.getmodel(appearance_name + "UpperLeg")
-                    activity.players[n].actor.node.lower_leg_model = bs.getmodel(appearance_name + "LowerLeg")
-                    activity.players[n].actor.node.toes_model = bs.getmodel(appearance_name + "Toes")
+                    activity.players[n].actor.node.head_mesh = bs.getmesh(appearance_name + "Head")
+                    activity.players[n].actor.node.torso_mesh = bs.getmesh(appearance_name + "Torso")
+                    activity.players[n].actor.node.pelvis_mesh = bs.getmesh(appearance_name + "Pelvis")
+                    activity.players[n].actor.node.upper_arm_mesh = bs.getmesh(appearance_name + "UpperArm")
+                    activity.players[n].actor.node.forearm_mesh = bs.getmesh(appearance_name + "ForeArm")
+                    activity.players[n].actor.node.hand_mesh = bs.getmesh(appearance_name + "Hand")
+                    activity.players[n].actor.node.upper_leg_mesh = bs.getmesh(appearance_name + "UpperLeg")
+                    activity.players[n].actor.node.lower_leg_mesh = bs.getmesh(appearance_name + "LowerLeg")
+                    activity.players[n].actor.node.toes_mesh = bs.getmesh(appearance_name + "Toes")
                     activity.players[n].actor.node.style = appearance_name
                 else:
                     # If the appearance name is not valid, inform the user
@@ -699,7 +702,7 @@ def attack(arguments, clientid):
     # Create the landmine visual (landmine texture) and timers under this activity.
     with activity.context:
         landmine = None
-        # Preferred: a non-physical prop using landmine model/texture.
+        # Preferred: a non-physical prop using landmine mesh/texture.
         try:
             landmine = bs.newnode('prop', attrs={
                 'position': (0, 1.0, 0),
@@ -1028,16 +1031,16 @@ def drop(arguments, clientid):
 
 
 def floater_command(arguments, clientid):
-    """Control Floater using testing files/floater.py: /floater [clientId]
+    """Control Floater using plugins/floater.py: /floater [clientId]
     If no clientId is provided, uses the caller's client id.
     """
     try:
         import os, importlib.util
-        # Compute repo root from this file: dist/ba_root/mods/chathandle/chatcommands/commands/management.py
-        base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..'))
-        fpath = os.path.join(base, 'testing files', 'floater.py')
+        # Compute mods root from this file: dist/ba_root/mods/chathandle/chatcommands/commands/management.py
+        base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        fpath = os.path.join(base, 'plugins', 'floater.py')
         if not os.path.exists(fpath):
-            send('Floater module not found in testing files.', clientid)
+            send('Floater module not found in plugins.', clientid)
             return
         spec = importlib.util.spec_from_file_location('testing_floater', fpath)
         mod = importlib.util.module_from_spec(spec)
@@ -1054,8 +1057,10 @@ def floater_command(arguments, clientid):
             mod.assignFloInputs(int(target))
         else:
             send('assignFloInputs not found in testing floater.', clientid)
-    except Exception:
+    except Exception as e:
         try:
+            import traceback
+            traceback.print_exc()
             send('Floater unavailable right now.', clientid)
         except Exception:
             pass
@@ -1213,7 +1218,7 @@ def server_chat(arguments, clientid):
 def stats_to_clientid(arguments, clid, acid):
      activity = bs.get_foreground_host_activity()
      if arguments == [] or arguments == ['']:
-        with bs.Context(activity):
+        with activity.context:
          send(f"Using: /pme [Clientid of player]", clid)
      else:
          cl_id = int(arguments[0])
@@ -1227,7 +1232,7 @@ def stats_to_clientid(arguments, clid, acid):
                  if stats:
                      reply = (
                          f"\ue048| Name: {fname}\n"
-                         f"\ue048| PB-ID: {stats['aid']}\n"
+                         #f"\ue048| PB-ID: {stats['aid']}\n"
                          f"\ue048| Rank: {stats['rank']}\n"
                          f"\ue048| Score: {stats['scores']}\n"
                          f"\ue048| Games: {stats['games']}\n"
@@ -1534,10 +1539,10 @@ def get_profiles(arguments, clientid):
 
 
 def party_toggle(arguments):
-    if arguments == ['public']:
+    if arguments[0].lower() == 'public':
         bs.set_public_party_enabled(True)
         bs.chatmessage("party is public now")
-    elif arguments == ['private']:
+    elif arguments[0].lower() == 'private':
         bs.set_public_party_enabled(False)
         bs.chatmessage("party is private now")
     else:
@@ -1803,46 +1808,50 @@ def rotate_camera():
 
 
 def create_role(arguments):
-    try:
-        pdata.create_role(arguments[0])
-        try:
-            bs.chatmessage(f"role '{arguments[0]}' created")
-        except Exception:
-            pass
-    except:
+    if not arguments:
+        bs.chatmessage("Usage: /createrole [name]")
         return
+    try:
+        pdata.create_role(" ".join(arguments))
+        bs.chatmessage(f"role '{" ".join(arguments)}' created")
+    except Exception:
+        bs.chatmessage(f"An error occurred while creating the role.")
 
 
 def add_role_to_player(arguments):
-    try:
-
-        session = bs.get_foreground_host_session()
-        for i in session.sessionplayers:
-            if i.inputdevice.client_id == int(arguments[1]):
-                roles = pdata.add_player_role(
-                    arguments[0], i.get_v1_account_id())
-                try:
-                    bs.chatmessage(f"added role '{arguments[0]}' to {i.getname(full=True, icon=True)}")
-                except Exception:
-                    pass
-    except:
+    if not arguments or len(arguments) < 2:
+        bs.chatmessage("Usage: /addrole [cid] [role]")
         return
-
+    try:
+        cid = int(arguments[0])
+    except ValueError:
+        bs.chatmessage(f"Invalid client ID. Usage: /addrole [cid] [role]")
+        return
+    acc_id =  clientid_to_accountid(cid)
+    if acc_id:      
+        try:
+            pdata.add_player_role(" ".join(arguments[1:]), acc_id)
+            bs.chatmessage(f"Added role '{" ".join(arguments[1:])}' to {clientid_to_username(cid)}")
+        except Exception:
+            bs.chatmessage("An error occurred while adding the role.")
 
 def remove_role_from_player(arguments):
-    try:
-        session = bs.get_foreground_host_session()
-        for i in session.sessionplayers:
-            if i.inputdevice.client_id == int(arguments[1]):
-                roles = pdata.remove_player_role(
-                    arguments[0], i.get_v1_account_id())
-                try:
-                    bs.chatmessage(f"removed role '{arguments[0]}' from {i.getname(full=True, icon=True)}")
-                except Exception:
-                    pass
-
-    except:
+    if not arguments or len(arguments) < 2:
+        bs.chatmessage("Usage: /removerole [cid] [role]")
         return
+    try:
+        cid = int(arguments[0])
+    except ValueError:
+        bs.chatmessage(f"Invalid client ID. Usage: /removerole [cid] [role]")
+        return
+    acc_id =  clientid_to_accountid(cid)
+    if acc_id:      
+        try:
+            pdata.remove_player_role(" ".join(arguments[1:]), acc_id)
+            bs.chatmessage(f"Removed role '{" ".join(arguments[1:])}' from {clientid_to_username(cid)}")
+        except Exception:
+            bs.chatmessage("An error occurred while adding the role.")
+
 
 
 def get_roles_of_player(arguments, clientid):
@@ -1862,143 +1871,168 @@ def get_roles_of_player(arguments, clientid):
 
 
 def change_role_tag(arguments):
+    if not arguments or len(arguments) < 2:
+        bs.chatmessage(f"Usage: /roletag [role] [tag] [anim ID]")
+        return
+    role = arguments[0]
     try:
-        pdata.change_role_tag(arguments[0], arguments[1])
-        try:
-            bs.chatmessage(f"role '{arguments[0]}' tag changed")
-        except Exception:
-            pass
-    except:
+        anim_id = int(arguments[-1])
+        tag_text = " ".join(arguments[1:-1])
+    except ValueError:
+        anim_id = None
+        tag_text = " ".join(arguments[1:]) 
+    try:
+        pdata.change_role_tag(role= role, tag= tag_text, anim_id= anim_id)
+    except Exception:
+        bs.chatmessage(f"Error changing role tag")
+
+def change_role_anim(arguments):
+    if not arguments:
+        bs.chatmessage(f"Usage: /roleanim [role] [anim ID]")
+        return
+    pdata.change_role_anim(arguments[0], int(arguments[1]))
+
+def changeanim(arguments):
+    if not arguments or len(arguments) != 2:
+        bs.chatmessage(f"Usage:/changeanim [cid] [anim ID]")
+        return
+    try:
+        cid = int(arguments[0])
+        anim_id = int(arguments[1])
+    except ValueError:
+        bs.chatmessage("Invalid Input. Usage:/changeanim [cid] [anim_id]")
+        return    
+    account_id = clientid_to_accountid(cid)
+    if account_id:
+        pdata.change_custom_anim(account_id, anim_id)
+    
+
+def set_custom_tag(arguments): 
+    if not arguments or len(arguments) < 2:
+        bs.chatmessage(f"Usage: /customtag [cid] [tag] [anim id]")
+        return  # Need at least client ID and some tag text
+    try:
+        client_id = int(arguments[0])
+    except ValueError:
+        bs.chatmessage("Invalid client ID")
         return
 
-
-def set_custom_tag(arguments):
     try:
-        if len(arguments) < 2:
-            return  # Need at least client ID and some tag text
-        
-        client_id = arguments[0]
+        anim_id = int(arguments[-1])
+        tag_text = " ".join(arguments[1:-1])
+    except ValueError:
+        anim_id = 1
         tag_text = " ".join(arguments[1:])  # Combine all remaining arguments
-        
-        session = bs.get_foreground_host_session()
-        for i in session.sessionplayers:
-            if i.inputdevice.client_id == int(client_id):
-                roles = pdata.set_tag(tag_text, i.get_v1_account_id())
-                try:
-                    bs.chatmessage(f"custom tag set for {i.getname(full=True, icon=True)}")
-                except Exception:
-                    pass
-    except:
+
+    if anim_id not in range(1,21):
+        bs.chatmessage("Invalid input — anim ID should be 1 to 20.")
         return
+
+    account_id = clientid_to_accountid(clientid= client_id)
+    if account_id:
+        try:
+            pdata.set_tag(tag_text, account_id, anim_id= anim_id)
+            bs.chatmessage(f"custom tag set for {clientid_to_username(clientid= client_id)}")
+        except Exception:
+            bs.chatmessage(f"Error adding tag")
+
 
 def remove_custom_tag(arguments):
+    if not arguments:
+        bs.chatmessage(f"Usage: /removetag [cid]")
+        return  
     try:
-        session = bs.get_foreground_host_session()
-        for i in session.sessionplayers:
-            if i.inputdevice.client_id == int(arguments[0]):
-                pdata.remove_tag(i.get_v1_account_id())
-                try:
-                    bs.chatmessage(f"custom tag removed for {i.getname(full=True, icon=True)}")
-                except Exception:
-                    pass
-    except:
+        cid = int(arguments[0])
+    except ValueError:
+        bs.chatmessage(f"Invalid Client ID")
         return
+    # changed from get foreground host session to get game roster by sanji
+
+    account_id = clientid_to_accountid(clientid= cid)
+    if account_id:       
+        try:
+            pdata.remove_tag(account_id)
+            bs.chatmessage(f"custom tag removed for {clientid_to_username(cid)}")
+            return
+        except Exception:
+            bs.chatmessage(f"Error removing tag")
+            return
+    bs.chatmessage(f"Invalid Client ID")
+
+
+VALID_EFFECTS = ['aure', 'aurora', 'chispitas', 'darkmagic', 'darksn', 'distortion', 
+                 'fairydust', 'fire', 'firespark', 'footprint', 'galaxy', 'glow', 
+                 'highlightshine', 'ice', 'iceground', 'iceman', 'metal', 'orbguard', 
+                 'rainbow', 'randblink', 'randomcharacter', 'scorch', 'shine', 'slime', 
+                 'spark', 'sparkground', 'splinter', 'stars', 'surrounderhead', 'sweat', 
+                 'sweatground', 'nebulashards', 'thunderaura', 'voidrift', 'crystalwings', 
+                 'premiumhalo', 'solarcrown', 'pet', 'minipet']
+
+
+def set_custom_effect(arguments):
+    if not arguments or len(arguments) < 2:
+        bs.chatmessage(f"Usage:/customeffect [cid] [effect]")
+        return
+    try:
+        cid = int(arguments[0])
+    except ValueError:
+        bs.chatmessage(f"Invalid Client ID")
+        return
+
+    effect_name = " ".join(arguments[1:])
+    # Validate effect name
+    if effect_name not in VALID_EFFECTS:
+        bs.chatmessage(f"Unknown effect '{effect_name}'.")
+        return
+    
+    account_id = clientid_to_accountid(cid)
+    if account_id:
+        pdata.set_effect(effect_name, account_id, clientid_to_username(cid))
 
 
 def remove_custom_effect(arguments):
-    try:
-        session = bs.get_foreground_host_session()
-        # Usage:
-        # /removeeffect <client_id> -> remove all effects
-        # /removeeffect <effect_name> <client_id> -> remove only that effect
-        if not arguments:
-            return
-        if len(arguments) == 1:
-            target_cid = int(arguments[0])
-            for i in session.sessionplayers:
-                if i.inputdevice.client_id == target_cid:
-                    pdata.remove_effect(i.get_v1_account_id())
-                    try:
-                        bs.chatmessage(f"All custom effects removed for {i.getname(full=True, icon=True)}")
-                    except Exception:
-                        pass
-                    return
-        elif len(arguments) >= 2:
-            eff_name = arguments[0]
-            target_cid = int(arguments[1])
-            for i in session.sessionplayers:
-                if i.inputdevice.client_id == target_cid:
-                    # Remove only this effect if present
-                    try:
-                        custom = pdata.get_custom()
-                        acc = i.get_v1_account_id()
-                        current = custom.get('customeffects', {}).get(acc, [])
-                        if isinstance(current, str):
-                            current = [current]
-                        if eff_name in current:
-                            current = [e for e in current if e != eff_name]
-                            if current:
-                                custom['customeffects'][acc] = current
-                            else:
-                                custom['customeffects'].pop(acc, None)
-                            pdata.CacheData.custom = custom
-                            try:
-                                bs.chatmessage(f"Effect '{eff_name}' removed for {i.getname(full=True, icon=True)}")
-                            except Exception:
-                                pass
-                        else:
-                            try:
-                                bs.chatmessage(f"Effect '{eff_name}' not found for {i.getname(full=True, icon=True)}")
-                            except Exception:
-                                pass
-                    except Exception:
-                        pass
-                    return
-    except Exception:
+    if not arguments:
+        bs.chatmessage("Usage: /removeeffect [cid] [effect]")
         return
 
-
-VALID_EFFECTS = ['aure', 'aurora', 'chispitas', 'darkmagic', 'darksn', 'distortion', 'fairydust', 'fire', 'firespark', 'footprint', 'galaxy', 'glow', 'highlightshine', 'ice', 'iceground', 'iceman', 'metal', 'orbguard', 'rainbow', 'randblink', 'randomcharacter', 'scorch', 'shine', 'slime', 'spark', 'sparkground', 'splinter', 'stars', 'surrounderhead', 'sweat', 'sweatground', 'nebulashards', 'thunderaura', 'voidrift', 'crystalwings', 'premiumhalo', 'solarcrown', 'pet', 'minipet']
-
-def set_custom_effect(arguments):
     try:
-        effect_name = arguments[0]
-        # Validate effect name
-        if effect_name not in VALID_EFFECTS:
-            bs.chatmessage(
-                f"❌ Unknown effect '{effect_name}'."
-            )
-            return
-        session = bs.get_foreground_host_session()
-        for i in session.sessionplayers:
-            if i.inputdevice.client_id == int(arguments[1]):
-                acc = i.get_v1_account_id()
-                custom = pdata.get_custom()
-                effs = custom.get('customeffects', {}).get(acc, [])
-                if isinstance(effs, str):
-                    effs = [effs]
-                if effect_name in effs:
-                    try:
-                        bs.chatmessage(f"⚠️ Effect '{effect_name}' is already applied to {i.getname(full=True, icon=True)}")
-                    except Exception:
-                        pass
-                    return
-                if len(effs) >= 2:
-                    try:
-                        bs.chatmessage(f"⚠️ Max 2 effects allowed; '{effect_name}' not added for {i.getname(full=True, icon=True)}")
-                    except Exception:
-                        pass
-                    return
-                pdata.set_effect(effect_name, acc)
-                try:
-                    bs.chatmessage(f"✅ Effect '{effect_name}' added to {i.getname(full=True, icon=True)}")
-                except Exception:
-                    pass
-    except:
+        cid = int(arguments[0])
+    except ValueError:
+        bs.chatmessage("Invalid client ID")
         return
 
+    if len(arguments) > 1:
+        effect = arguments[1]
+        if effect not in VALID_EFFECTS:
+            bs.chatmessage("Invalid effect name")
+            return
+    else:
+        effect = None
 
-all_commands = ["attack","target","changetag","banlist", "createrole", "addrole", "removerole",
+    account_id = clientid_to_accountid(cid)
+    if not account_id:
+        bs.chatmessage("Could not resolve account ID.")
+        return
+
+    pdata.remove_effect(account_id, effect, clientid_to_username(cid))
+
+        
+def show_effect(arguments):
+    if not arguments:
+        bs.chatmessage("Usage: /showeff [cid]")
+        return
+    try:
+        cid = int(arguments[0])
+    except ValueError:
+        bs.chatmessage("Invalid client ID")
+        return
+
+    account_id = clientid_to_accountid(cid)
+    if account_id:
+        pdata.show_effect(account_id, clientid_to_username(cid))
+
+
+'''all_commands = ["attack","target","changetag","banlist", "createrole", "addrole", "removerole",
                 "addcommand", "addcmd", "removecommand", "removecmd", "kick",
                 "remove", "rm", "end", "next", "quit", "restart", "mute",
                 "mutechat", "unmute", "unmutechat", "sm", "slow", "slowmo",
@@ -2008,8 +2042,9 @@ all_commands = ["attack","target","changetag","banlist", "createrole", "addrole"
                 "shield", "protect", "freeze", "ice", "unfreeze", "thaw", "gm",
                 "godmode", "fly", "inv", "invisible", "hl", "headless",
                 "creepy", "creep", "celebrate", "celeb", "spaz","pme","say","hug","hugall","cc","spaz"
-                "ccall","spazall","acl","control","exchange","icy","box","boxall","kickall","floater"]
-
+                "ccall","spazall","acl","control","exchange","icy","box","boxall","kickall","floater",
+                "c"]
+'''
 
 def add_command_to_role(arguments):
     try:
@@ -2105,13 +2140,262 @@ def change_lobby_check_time(arguments):
     bs.chatmessage(f"lobby check time is {argument} now")
 
 
-def set_test():
+
+def zombie(arguments, clientid):
+ activity = bs.get_foreground_host_activity()
+ a = arguments
+ with activity.context:
     try:
-        data = setting.get_settings_data()
-        import json
-        with open('settest.json', 'w') as json_file:
-            json.dump(data, json_file, indent=4)
-        print("dump setting data done")
-    except Exception:
-        import traceback
-        traceback.print_exc()
+        try:
+            if arguments != []:
+                n = int(a[0])
+            activity.players[n].actor.node.color_texture = bs.gettexture("agentColor")
+            activity.players[n].actor.node.color_mask_texture = bs.gettexture("pixieColorMask")
+            activity.players[n].actor.node.head_mesh = bs.getmesh("zoeHead")
+            activity.players[n].actor.node.torso_mesh = bs.getmesh("bonesTorso")
+            activity.players[n].actor.node.pelvis_mesh = bs.getmesh("pixiePelvis")
+            activity.players[n].actor.node.upper_arm_mesh = bs.getmesh("frostyUpperArm")
+            activity.players[n].actor.node.forearm_mesh = bs.getmesh("frostyForeArm")
+            activity.players[n].actor.node.hand_mesh = bs.getmesh("bonesHand")
+            activity.players[n].actor.node.upper_leg_mesh = bs.getmesh("bonesUpperLeg")
+            activity.players[n].actor.node.lower_leg_mesh = bs.getmesh("pixieLowerLeg")
+            activity.players[n].actor.node.toes_mesh = bs.getmesh("bonesToes")
+            activity.players[n].actor.node.color = (0,1,0)
+            activity.players[n].actor.node.highlight = (0.6,0.6,0.6)
+            activity.players[n].actor.node.style = "spaz"
+        except:
+            send(f"Using: /zombieall [or] /zombie [PlayerID]", clientid)
+    except:
+        send(f"Using: /zombieall [or] /zombie [PlayerID]", clientid)
+
+
+def zombieall(arguments, clientid):
+ activity = bs.get_foreground_host_activity()
+ a = arguments
+ with activity.context:
+    for i in activity.players:
+        try:
+            i.actor.node.color_texture = bs.gettexture("agentColor")
+            i.actor.node.color_mask_texture = bs.gettexture("pixieColorMask")
+            i.actor.node.head_mesh = bs.getmesh("zoeHead")
+            i.actor.node.torso_mesh = bs.getmesh("bonesTorso")
+            i.actor.node.pelvis_mesh = bs.getmesh("pixiePelvis")
+            i.actor.node.upper_arm_mesh = bs.getmesh("frostyUpperArm")
+            i.actor.node.forearm_mesh = bs.getmesh("frostyForeArm")
+            i.actor.node.hand_mesh = bs.getmesh("bonesHand")
+            i.actor.node.upper_leg_mesh = bs.getmesh("bonesUpperLeg")
+            i.actor.node.lower_leg_mesh = bs.getmesh("pixieLowerLeg")
+            i.actor.node.toes_mesh = bs.getmesh("bonesToes")
+            i.actor.node.color = (0,1,0)
+            i.actor.node.highlight = (0.6,0.6,0.6)
+            i.actor.node.style = "spaz"
+        except:
+            send(f"Using: /zombieall [or] /zombie [PlayerID]", clientid)
+
+
+def tex(arguments, clientid):
+ activity = bs.get_foreground_host_activity()
+ a = arguments
+ with activity.context:
+    try:
+        if len(a) > 1: n = int(a[0])
+        color = None
+        if (len(a) > 1) and (str(a[1]) == 'kronk'): color = str(a[1])
+        else:color = str(a[1]) + 'Color'
+        try:
+            activity.players[n].actor.node.color_mask_texture= bs.gettexture(str(a[1]) + 'ColorMask')
+            activity.players[n].actor.node.color_texture= bs.gettexture(color)
+        except:
+            send(f"Using: /texall [texture] [or] /tex [PlayerID] [texture]", clientid)
+    except:
+        send(f"Using: /texall [texture] [or] /tex [PlayerID] [texture]", clientid)
+
+
+def texall(arguments, clientid):
+ activity = bs.get_foreground_host_activity()
+ a = arguments
+ with activity.context:
+    try:
+        color = None
+        if str(a[0]) == 'kronk':
+            color = str(a[0])
+        else:color = str(a[0]) + 'Color'
+        for i in activity.players:
+            try:
+                i.actor.node.color_mask_texture= bs.gettexture(str(a[0]) + 'ColorMask')
+                i.actor.node.color_texture= bs.gettexture(color)
+            except:
+                pass
+    except:
+        send(f"Using: /texall [texture] [or] /tex [PlayerID] [texture]", clientid)
+
+       
+def zm(arguments, clientid):
+
+    if len(arguments) == 0:
+        bs.broadcastmessage("Usage: /zm [message] [colour]", color=(1,1,1), transient=True, clients=[clientid])
+    else:
+        colors = {
+            'red': (1.0, 0.0, 0.0),
+            'blue': (0.0, 0.0, 1.0),
+            'green': (0.0, 1.0, 0.0),
+            'yellow': (1.0, 1.0, 0.0),
+            'cyan': (0.0, 1.0, 1.0),
+            'magenta': (0.788, 0.094, 0.29),
+            'orange': (1.0, 0.5, 0.0),
+            'purple': (0.835, 0, 0.902),
+            'pink': (1, 0.361, 0.914),
+            'brown': (0.6, 0.3, 0.0)
+        }
+        if arguments[-1].lower() in colors:
+            text = ' '.join(arguments[:-1])
+            color = colors.get(arguments[-1].lower(), (0.93*1.25, 0.9*1.25, 1.0*1.25))
+        else:
+            text = ' '.join(arguments)
+            color=(0.93*1.25, 0.9*1.25, 1.0*1.25)
+
+        activity = bs.get_foreground_host_activity()       
+        with activity.context:
+            ZoomText(
+                text = text,
+                position=(0, 180),
+                maxwidth=800,
+                lifespan=1,
+                color= color,
+                trailcolor=(0.15, 0.05, 1.0, 0.0),
+                flash=False,             
+                jitter=3.0
+            ).autoretain()
+
+
+def icy(arguments, clientid):
+ activity = bs.get_foreground_host_activity()
+ a = arguments
+ with activity.context:
+    try:
+        if True:
+            try:
+                player1 = int(a[0])
+            except:
+                pass
+            try:
+                player2 = int(a[1])
+            except:
+                pass
+        node1 = activity.players[player2].actor.node
+        activity.players[player1].actor.node = node1         
+    except:
+        send(f"Using: /icy [PlayerID1] [PlayerID2]", clientid)
+        
+# Funtion to play sound
+def _play_sound(sound, a):
+    activity = bs.get_foreground_host_activity()
+    with activity.context:  
+        try:
+            timer_holder = {}
+            if a is not None and len(a) > 0:
+                times = int(a[0])
+                def sound_recursive(c):
+                    bs.getsound(sound).play()
+                    c -= 1
+                    if c > 0:
+                        timer_holder ['t'] = bs.Timer(float(a[1]) if len(a) > 1 and a[1] is not None else 1.0, bs.Call(sound_recursive, c=c))
+                sound_recursive(c=times)
+            else:
+                bs.getsound(sound).play()
+        except Exception:
+            pass
+
+
+def play_ooh_sound(arguments):
+    _play_sound('ooh',arguments)
+
+def play_cheer_sound(arguments):
+    _play_sound('cheer', arguments)
+
+
+def play_sound(arguments, clientid):
+  activity = bs.get_foreground_host_activity()
+  with activity.context:  
+    try:
+        a = arguments  # Assign arguments to 'a'
+        if a is not None and len(a) > 0:
+            sound_name = str(a[0])
+            times = int(a[1]) if len(a) > 1 else 1  # Set default times to 1 if not provided
+            volume = float(a[2]) if len(a) > 2 else 2.0  # Set default volume to 2.0 if not provided
+            def play_sound_recursive(c):
+                bs.playsound(bs.getsound(sound_name), volume=volume)
+                c -= 1
+                if c > 0:
+                    bs.Timer(int(a[3]) if len(a) > 3 and a[3] is not None else 1000, bs.Call(play_sound_recursive, c=c))
+            play_sound_recursive(c=times)
+        else:
+            send(f"Using: /playsound [music sound] [time] [volume]", clientid)
+    except Exception as e:
+        send(f"Using: /playsound [music sound] [time] [volume]", clientid)
+
+
+def protect_players(arguments, clientid):
+    if arguments == [] or arguments == ['']:
+        myself = clientid_to_myself(clientid)
+        activity = bs.get_foreground_host_activity()
+        player = activity.players[myself].actor
+        
+        if player.node.invincible != True:
+            player.node.invincible = True 
+        else:
+            player.node.invincible = False 
+    
+    elif arguments[0] == 'all':
+        activity = bs.get_foreground_host_activity()
+        for i in activity.players:
+            if i.actor.node.invincible != True:
+                i.actor.node.invincible = True 
+            else:
+                i.actor.node.invincible = False 
+    
+    else:
+        activity = bs.get_foreground_host_activity()
+        req_player = int(arguments[0])
+        player = activity.players[req_player].actor
+        
+        if player.node.invincible != True: 
+            player.node.invincible = True 
+        else:
+            player.node.invincible = False
+
+        
+def acl(arguments, client_id):
+    role = "admin"
+    admin_commands = pdata.roles_cmdlist(role)
+    if not admin_commands:
+        send("Error: Admin role not found.", client_id)
+        return
+    msg = "\ue046______________|ADMIN-CMDS-LISTS|________________\ue046\n"
+    admin_commands_list = admin_commands.split(', ')
+    for i, cmd in enumerate(admin_commands_list, 1):
+        if i % 10 == 0:
+            msg += "\n\ue046 || " + cmd
+        elif i == 1:  # Add \ue046 || only to the first command of each line
+            msg += "\ue046 || " + cmd
+        else:
+            msg += ', ' + cmd
+    send(msg, client_id)
+
+
+def vcl(arguments, client_id):
+    role = "vip"
+    admin_commands = pdata.roles_cmdlist(role)
+    if not admin_commands:
+        send("Error: Vip role not found.", client_id)
+        return
+    msg = "\ue046______________|VIP-CMDS-LISTS|________________\ue046\n"
+    admin_commands_list = admin_commands.split(', ')
+    for i, cmd in enumerate(admin_commands_list, 1):
+        if i % 10 == 0:
+            msg += "\n\ue046 || " + cmd
+        elif i == 1:  # Add \ue046 || only to the first command of each line
+            msg += "\ue046 || " + cmd
+        else:
+            msg += ', ' + cmd
+    send(msg, client_id)

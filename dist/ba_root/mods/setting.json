@@ -52,6 +52,18 @@
         "enable": false,
         "minPlayerToExitCoop": 3
     },
+    "customBombs": {
+        "gravity": {
+            "enable": false,
+            "spawn_chance": 0.1,
+            "spawn_from_boxes": true
+        },
+        "silence": {
+            "enable": false,
+            "spawn_chance": 0.15,
+            "spawn_from_boxes": true
+        }
+    },
     "custom_characters": {
         "enable": true
     },
@@ -60,17 +72,17 @@
         "webhookURL": "https://discord.com/api/webhooks/1414171174866391041/CJ0oXdkAvsKh_VsZW7vouVBLtWMojCRH7_Ri7F0Ywx7CUzlP-I99dPr7lkX_zERA-0NR"
     },
     "discordbot": {
+        "chatlistChannelID": 0,
+        "complaintStaffRoleID": "1468270279716245709",
+        "complaintsChannelID": "1468269892925915166",
+        "directCmdChannelID": "1468886329193660558",
         "enable": true,
-        "liveChat": true,
+        "gameInfoChannelID": "1518871456648396800",
         "leaderboardChannelID": "1518871619718877304",
+        "liveChat": true,
         "liveStatsChannelID": "1518871668917796904",
         "logsChannelID": "1518871551796318208",
-        "directCmdChannelID": "1468886329193660558",
         "roleCmdChannelIds": "1468886329193660558",
-        "gameInfoChannelID": "1518871456648396800",
-        "complaintsChannelID": "1468269892925915166",
-        "complaintStaffRoleID": "1468270279716245709",
-        "chatlistChannelID": 0,
         "token": ""
     },
     "elPatronPowerups": {
@@ -152,18 +164,6 @@
         "default_boxing_gloves": true,
         "default_shield": false
     },
-    "customBombs": {
-        "silence": {
-            "enable": false,
-            "spawn_from_boxes": true,
-            "spawn_chance": 0.15
-        },
-        "gravity": {
-            "enable": false,
-            "spawn_from_boxes": true,
-            "spawn_chance": 0.10
-        }
-    },
     "playlists": {
         "dm": 569392,
         "elim": 412172,
@@ -194,7 +194,7 @@
             ],
             "randomColor": true
         },
-        "top watermark": "⚔️『━━━━━━━━━━━━━━』⚔️ 👑 ᴛᴀᴍɪʟ sᴇʀᴠᴇʀ ᴏғғɪᴄɪᴀʟ 👑 ⚔️『━━━━━━━━━━━━━━』⚔️"
+        "top watermark": "\u2694\ufe0f\u300e\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u300f\u2694\ufe0f \ud83d\udc51 \u1d1b\u1d00\u1d0d\u026a\u029f s\u1d07\u0280\u1d20\u1d07\u0280 \u1d0f\u0493\u0493\u026a\u1d04\u026a\u1d00\u029f \ud83d\udc51 \u2694\ufe0f\u300e\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u300f\u2694\ufe0f"
     },
     "useV2Account": false,
     "warnMsg": "WARNING !!!",

@@ -73,7 +73,7 @@ def get_profiles() -> dict:
     """
     if CacheData.profiles == {}:
         try:
-            if os.stat(PLAYERS_DATA_PATH + "profiles.json").st_size > 1000000:
+            if os.stat(PLAYERS_DATA_PATH + "profiles.json").st_size > 5000000:
                 newpath = f'{PLAYERS_DATA_PATH}profiles-{str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}.json'
                 shutil.copyfile(PLAYERS_DATA_PATH + "profiles.json", newpath)
                 profiles = {"pb-sdf": {}}
@@ -451,15 +451,28 @@ def get_roles() -> dict:
             roles = json.load(f)
             f.close()
             CacheData.roles = roles
-    # Ensure 'protected' role exists at runtime.
+
     try:
-        if "protected" not in CacheData.roles:
-            CacheData.roles["protected"] = {
-                "tag": "protected",
-                "tagcolor": [1, 1, 1],
-                "commands": [],
-                "ids": [],
-            }
+        #adding default roles
+        default_roles = {
+            'owner': ["\\c OWNER \\c", 20, [1,1,1],[],[]],
+            'moderator': ["\\d MODERATOR \\d", 18, [1,1,1],[],[]],
+            'cs': ["\\n COMPLIENT STAFF \\n", 16, [1,1,1],[],[]],
+            'leadstaff': ["\\f LEAD STAFF \\f", 16, [1,1,1],[],[]],
+            'admin': ["\\bs ADMIN \\bs", 13, [1,1,1],[],[]],
+            'vip':["\\bs VIP \\bs", 11, [1,1,1],[],[]],
+            'protected': ["\\l PROTECTED \\l", 11, [1,1,1],[],[]],
+            "bypass-warn": ["", 1,[1,1,1],[],[]],
+            "top5":["EliteFive", 15, [1,1,1],[],[]]
+        }
+        for role_name, values in default_roles.items():
+            role_dict = CacheData.roles.setdefault(role_name, {})
+            role_dict.setdefault("tag", values[0])
+            role_dict.setdefault("anim_id", values[1])
+            role_dict.setdefault("tagcolor", values[2])
+            role_dict.setdefault("commands", values[3])
+            role_dict.setdefault("ids", values[4])
+
     except Exception:
         pass
     return CacheData.roles
@@ -481,6 +494,7 @@ def create_role(role: str) -> None:
     roles[role] = {
         "tag": role,
         "tagcolor": [1, 1, 1],
+        "anim_id": 1,
         "commands": [],
         "ids": [],
     }
@@ -507,7 +521,7 @@ def add_player_role(role: str, account_id: str) -> None:
             commit_roles(roles)
 
     else:
-        print(f'Role named {role} does not exist.')
+        bs.chatmessage(f"Role {role} doesn't exist")
 
 
 def remove_player_role(role: str, account_id: str) -> str:
@@ -584,7 +598,7 @@ def remove_command_role(role: str, command: str) -> str:
     return "command not exists"
 
 
-def change_role_tag(role: str, tag: str) -> str:
+def change_role_tag(role: str, tag: str, anim_id:int = None) -> str:
     """Changes the tag of the role.
 
     Parameters
@@ -602,10 +616,89 @@ def change_role_tag(role: str, tag: str) -> str:
     roles = get_roles()
     if role in roles:
         roles[role]["tag"] = tag
+        if anim_id:
+            roles[role]["anim_id"] = anim_id
         CacheData.roles = roles
         commit_roles(roles)
-        return "tag changed"
-    return "role not exists"
+        bs.chatmessage(f"role {role} tag changed to {tag}")
+        return
+    bs.chatmessage(f"Role {role} doesn't exist")
+    return
+
+def change_role_anim(role:str, anim_id:int) ->str:
+    '''Changes the tag anim of a role
+    returns status of job'''
+    try:
+        roles = get_roles()
+        if role in roles:
+            if anim_id in range(1,21):
+                roles[role]["anim_id"] = anim_id
+                CacheData.roles = roles
+                commit_roles(roles)
+                bs.chatmessage(f"role '{role}' animation changed to ID = {anim_id}")
+            else:
+                bs.chatmessage("Invalid input — anim ID should be 1 to 20.")
+        else:
+            bs.chatmessage(f"Role '{role}' does not exists")
+    except Exception:
+        import traceback
+        traceback.print_exc()
+
+def change_custom_anim(account_id, anim_id):
+    try:
+        custom = get_custom()
+        p = custom.get('customtag', {}).get(account_id,{})
+        if not p:
+            bs.chatmessage(f"Player Doesn't have a custom tag. Add one with /ct")
+            return
+        if anim_id not in range(1,21):
+            bs.chatmessage("Invalid input — anim ID should be 1 to 20.")
+            return
+        p["anim_id"] = anim_id
+        CacheData.custom = custom
+        commit_c()
+        bs.chatmessage(f"Customtag animation changed successfully")
+        return
+    except Exception:
+        bs.chatmessage(f"Error changing tag animation")
+        return
+
+def buy_tag_tagpass(client_id: int, account_id:str, tag: str, anim_id:int):
+    try:
+        custom = get_custom()
+        tag_pass = custom["tagpass"]
+        if not tag_pass.get(account_id, None):
+            bs.chatmessage(f"You don't have valid tagpass buy one from shop use:/shop buy tagpass", clients=[client_id])
+            return
+        if tag_pass.get(account_id, {}).get("used", False):
+            bs.chatmessage(f"Tag pass already used", clients=[client_id])
+            return
+        if anim_id not in range(1, 13):
+            bs.chatmessage(f"Invalid input — tagpass anim ID should be 1 to 12.")
+            return
+        paid_tag = custom["paidtags"]
+        paid_tag[account_id] = {
+            "tag": tag,
+            "anim_id": anim_id,
+            "expires_at": tag_pass.get(account_id, {}).get("expires_at", time.time() + 24*60*60),
+        }
+        tag_pass[account_id]["used"] = True
+        bs.chatmessage(f"Tag added successfully for 1 day", clients=[client_id])
+        CacheData.custom = custom
+        commit_c()
+    except Exception:
+        import traceback
+        traceback.print_exc()
+
+#reformed. use this in tag.py instead of function from coin.so
+#reformed for adding anim_id
+#edited by sanji
+def get_paid_tag(account_id: str):
+    custom = get_custom()
+    paid_tag = custom.get("paidtags", {}).get(account_id)
+    if not paid_tag:
+        return None, None
+    return paid_tag.get("tag"), paid_tag.get("anim_id")
 
 
 def get_player_roles(account_id: str) -> list[str]:
@@ -669,40 +762,49 @@ def get_custom() -> dict:
             val = CacheData.custom["customeffects"][account_id]
             CacheData.custom["customeffects"][account_id] = [val] if isinstance(val, str) else val
 
+        # Normalize customtag values (string → dict)
+        for account_id, val in list(CacheData.custom["customtag"].items()):
+            if isinstance(val, str):
+                CacheData.custom["customtag"][account_id] = {
+                    "tag": val,
+                    "anim_id": 1 #default 1
+                }
+
     return CacheData.custom
 
 
-def set_effect(effect: str, account_id: str) -> None:
-    """Sets the costum effect for the player.
+def set_effect(effect: str, account_id: str, username: str) -> None:
+    """Sets the custom effect for the player.
 
     Parameters
     ----------
     effect : str
-        effect to be added to the player
-    accout_id : str
-        account id of the client
+        Effect to be added to the player.
+    account_id : str
+        Account ID of the client.
+    username : str
+        Username of the client.
     """
-    custom = get_custom()
-    # Enforce max 2 active effects
-    if account_id in custom["customeffects"]:
-        effects = [custom["customeffects"][account_id]] if type(
-            custom["customeffects"][account_id]) is str else \
-            custom["customeffects"][account_id]
-        # Do not allow duplicates
-        if effect in effects:
+    try:
+        custom = get_custom()
+        customeffects = custom.setdefault("customeffects", {})
+        eff = customeffects.setdefault(account_id, [])
+
+        if effect in eff:
+            bs.chatmessage(f"Effect '{effect}' is already applied to {username}")
             return
-        # Enforce cap
-        if len(effects) >= 2:
-            return  # do not add more than 2 effects
-        effects.append(effect)
-        custom["customeffects"][account_id] = effects
-    else:
-        custom["customeffects"][account_id] = [effect]
-    CacheData.custom = custom
-    commit_c()
+        elif len(eff) >= 2:
+            bs.chatmessage(f"Max 2 effects allowed; '{effect}' not added for {username}")
+            return
+        eff.append(effect)
+        bs.chatmessage(f"Effect '{effect}' added to {username}")
+        CacheData.custom = custom
+        commit_c()
+    except Exception:
+        bs.chatmessage("Error adding custom effect")
 
 
-def set_tag(tag: str, account_id: str) -> None:
+def set_tag(tag: str, account_id: str, anim_id: int) -> None:
     """Sets the custom tag to the player.
 
     Parameters
@@ -713,7 +815,7 @@ def set_tag(tag: str, account_id: str) -> None:
         account id of the client
     """
     custom = get_custom()
-    custom["customtag"][account_id] = tag
+    custom["customtag"][account_id] = {'tag': tag, 'anim_id': anim_id}
     CacheData.custom = custom
     commit_c()
 
@@ -730,17 +832,41 @@ def update_custom_perks(custom):
     CacheData.custom = custom
 
 
-def remove_effect(account_id: str) -> None:
-    """Removes the effect from player.
+def remove_effect(account_id: str, effect: str | None, username: str) -> None:
+    """Removes the effect from a player."""
+    try:
+        custom = get_custom()
+        ce = custom.get("customeffects", {})
+        eff = ce.get(account_id, [])
 
-    Parameters
-    ----------
-    account_id : str
-        account id of the client
-    """
-    custom = get_custom()
-    custom["customeffects"].pop(account_id, None)
-    CacheData.custom = custom
+        if not effect:
+            ce.pop(account_id, None)
+            bs.chatmessage(f"All effects removed from {username}")
+        elif effect in eff:
+            eff.remove(effect)
+            bs.chatmessage(f"Effect '{effect}' removed from {username}")
+        else:
+            bs.chatmessage(f"{username} doesn't have the effect '{effect}'")
+
+        CacheData.custom = custom
+        commit_c()
+    except Exception:
+        bs.chatmessage(f"Error removing effect for {username}")
+
+def show_effect(account_id: str, username: str) -> None:
+    """Shows the effects of a player."""
+    try:
+        custom = get_custom()
+        effects = custom.get("customeffects", {}).get(account_id, [])
+
+        if not effects:
+            bs.chatmessage(f"{username} doesn't have any effects")
+            return
+
+        bs.chatmessage(f"{username}'s effects: " + ", ".join(effects))
+    except Exception as e:
+        bs.chatmessage(f"Unable to fetch {username}'s effects")
+
 
 
 def remove_tag(account_id: str) -> None:
@@ -813,3 +939,152 @@ def dump_cache():
             json.dump(custom, f, indent=4)
     time.sleep(60)
     dump_cache()
+
+# ----- coin system ----
+
+#add coin to a account
+def add_coins(account_id, amount):
+    custom = get_custom()
+    coins:dict = custom.setdefault("coins",{})
+    p_coin = coins.setdefault(account_id, 0)
+    p_coin += int(amount)
+    if p_coin < 0:
+        p_coin = 0
+    CacheData.custom = custom
+    commit_c()
+
+
+
+#match winning reward
+def reward_for_winning(session, winning_team):
+    try:
+        if winning_team is None:
+            return
+
+        reward = 20
+        announcement = "\ue043 🎉 Victory Rewards 🎉 \ue043\n"
+        reward_sent = False
+
+        for player in winning_team.players:
+            acc_id = player.get_v1_account_id()
+
+            if acc_id:
+                add_coins(acc_id, reward)
+                name = player.getname(icon=False)
+                announcement += f"✨ {name} earned {reward} coins! ✨\n"
+                reward_sent = True
+
+        if reward_sent:
+            bs.broadcastmessage(announcement, color=(0, 1, 0))
+
+    except Exception as e:
+        print(f"Coin Reward Error: {e}")
+        import traceback
+        traceback.print_exc()
+
+def top_cashers(limit:int = 10):
+    custom = get_custom()
+    coins_data = custom.get("coins", {})
+    if not coins_data:
+        return "No data to show"
+    profiles = get_profiles()
+    top_list = sorted(coins_data.items(),key= lambda x: x[1], reverse= True)[:limit]
+
+    lines = [f"\ue01d ---- RICHEST PLAYERS ---- \ue01d"]
+    for i, (aid, coins) in enumerate(top_list):
+        if coins == 0:
+            break
+        name = profiles.get(aid,{}).get("name",aid)
+        lines.append(f"{i+1}. {name} -- \ue01d {coins}")
+    if len(lines) > 1:
+        msg = "\n".join(lines)
+        return msg
+    return "No data to show"
+
+
+def _medal(rank: int) -> str:
+    return ['🥇', '🥈', '🥉'][rank] if rank < 3 else f'#{rank + 1}'
+
+
+def _name(entry: dict, aid: str) -> str:
+    n = entry.get('name', aid)
+    if not n or n in ('default name', 'default'):
+        n = aid[:12]
+    # Strip to max 18 chars
+    return n[:18]
+
+
+def top_players(limit: int = 10):
+    try:
+        from stats.mystats import get_all_stats
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        return "Error fetching player stats."
+
+    stats = get_all_stats()
+    if not stats:
+        return "No data to show"
+
+    players = list(stats.values())
+    top_kills = sorted(players, key=lambda p: p.get('kills', 0), reverse=True)[:limit]
+    lines = [f"\ue048 ---- TOP PLAYERS ---- \ue048"]
+    for i, p in enumerate(top_kills):
+        kills = p.get('kills', 0)
+        if kills == 0:
+            break
+        lines.append(f"{_medal(i)}. {_name(p, p.get('aid','?'))} -- {kills:,} kills")
+
+    if len(lines) > 1:
+        return "\n".join(lines)
+    return "No data to show"
+
+
+
+def rank_zone(aid: str):
+    try:
+        from stats.mystats import get_all_stats
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        return "Error fetching rankings."
+
+    stats = get_all_stats()
+    players = list(stats.values())
+
+    sorted_players = sorted(players, key=lambda p: p.get('kills', 0), reverse=True)
+
+    idx = next((i for i, p in enumerate(sorted_players) if p.get('aid') == aid), None)
+    if idx is None:
+        return "You are not yet played"
+
+    start = max(0, idx - 3)
+    end = min(len(sorted_players), idx + 4)
+
+    window = sorted_players[start:end]
+
+    lines = ["🏆 ---- PLAYER RANK WINDOW ---- 🏆"]
+    for i, p in enumerate(window, start=start + 1):
+        kills = p.get('kills', 0)
+        lines.append(f"{i}. {_name(p, p.get('aid','?'))} -- {kills:,} kills")
+
+    return "\n".join(lines)
+
+
+def player_info(account_id:str):
+    data = get_info(account_id)
+    if data:
+        linked_accounts = data['name']
+        dob = data["accountAge"]
+        ts = datetime.strptime(dob, "%Y-%m-%d %H:%M:%S").timestamp()       
+        otheraccounts = ', '.join(data["display_string"])
+        return f"Accounts:{linked_accounts} \nother accounts {otheraccounts} \ncreated on <t:{int(ts)}:f>"
+    return None
+
+
+def player_noeffect(account_id:str):
+    custom = get_custom()
+    ce:dict = custom.get("paideffects",{})
+    ce.pop(account_id)
+    CacheData.custom = custom
+    commit_c()

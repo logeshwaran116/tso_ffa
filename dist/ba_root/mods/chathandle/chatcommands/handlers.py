@@ -21,6 +21,12 @@ def clientid_to_accountid(clientid):
     return None
 
 
+def clientid_to_username(clientid:int):
+    for i in bs.get_game_roster():
+        if i['client_id'] == clientid:
+            return i['display_string']
+    return ""
+
 def check_permissions(accountid, command):
     """
     Checks The Permission To Player To Executive Command

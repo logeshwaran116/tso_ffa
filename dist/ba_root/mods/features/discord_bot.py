@@ -76,7 +76,7 @@ LOGS_CHANNEL_ID = 1467401251561017384
 ERROR_LOG_CHANNEL_ID = 1502641543193038848  # Channel for errors/warnings
 LIVE_STATS_CHANNEL_ID = 1467399612288471162
 DIRECT_CMD_CHANNEL_ID = 1467402520828706817
-ROLE_CMD_CHANNEL_ID = [1467421373617143985]
+ROLE_CMD_CHANNEL_ID = 1467421373617143985
 ROLE_CMD_CHANNEL_NAMES = {"roles", "role-commands"}
 GAME_INFO_CHANNEL_ID = 1518869292479807530
 COMPLAINTS_CHANNEL_ID = 1468269892925915166
@@ -120,16 +120,16 @@ def load_allowed_users():
         if os.path.exists(ALLOWED_USERS_FILE):
             with open(ALLOWED_USERS_FILE, 'r') as f:
                 data = json.load(f)
-                ALLOWED_USER_IDS = data.get('allowed_users', [873566310183878696])
+                ALLOWED_USER_IDS = data.get('allowed_users', [1328582439685062709])
                 print(f"Loaded {len(ALLOWED_USER_IDS)} allowed users from {ALLOWED_USERS_FILE}")
         else:
             # Create default file with initial user
-            ALLOWED_USER_IDS = [873566310183878696]
+            ALLOWED_USER_IDS = [1328582439685062709]
             save_allowed_users()
             print(f"Created new {ALLOWED_USERS_FILE} with default user")
     except Exception as e:
         print(f"Error loading allowed users: {e}")
-        ALLOWED_USER_IDS = [873566310183878696]
+        ALLOWED_USER_IDS = [1328582439685062709]
         save_allowed_users()
 
 def save_allowed_users():
@@ -632,6 +632,10 @@ async def handle_discord_command(message):
         await handle_chatlist_command(message, arguments)
         return
 
+    if command == 'serverchat':
+        await handle_serverchat_command(message, arguments)
+        return
+    
     # === Moderation lists + pb-id actions (Discord UI) ===
     if command == 'banlist':
         await handle_banlist_command(message)
@@ -649,6 +653,9 @@ async def handle_discord_command(message):
         await handle_unmute_pbid_command(message, arguments)
         return
 
+    if command == 'info':
+        await handle_info_cmd(message, arguments)
+        return
 
     # Map Discord commands to management functions (in-game)
     command_map = {
@@ -712,38 +719,45 @@ async def handle_discord_command(message):
     except Exception as e:
         await message.channel.send(f"Error executing command `{command}`: {str(e)}")
 
-
-async def handle_chatlist_command(message, arguments):
-    """Show a player's recent chat from server chat logs.
-
-    Usage from Discord (in your chatlist channel):
-      t?chatlist <pb-id> [days]
-
-    Example:
-      t?chatlist pb-123 1   -> last 1 day
-      t?chatlist pb-123 2   -> last 2 days
+def _parse_log_line(line: str) -> str:
     """
-    # Restrict this command to a specific channel if configured.
-    if CHATLIST_CHANNEL_ID and message.channel.id != CHATLIST_CHANNEL_ID:
-        return
+    Converting date and time in timestamp to
+    render in discord
+    """
+    try:
+        lst = line.split(' + : ', 1)  # maxsplit=1: keeps rest of message intact
+                                       # even if it contains ' + : ' itself
+        dt = datetime.datetime.strptime(lst[0], "%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+        ts = int(dt.timestamp())  # convert into timezone
+        return f"- <t:{ts}:f> | {lst[1]}"
+    except Exception:
+        return f" - {line}"  # if line doesn't have time info return line
+
+
+async def handle_serverchat_command(message, arguments):
+    """Show chat for pb-ids
+    Usage from Discord 
+    t?serverchat day/msg [count]
+    
+    created by sanji"""
+    server = babase.app.classic.server._config.party_name
+    if not server:
+        server = 'Unknown'
 
     if not arguments:
-        await message.channel.send("Usage: `t?chatlist <pb-id> [days]`")
+        await message.channel.send("usage: t?serverchat day/msg [count]")
         return
+    arg = arguments[0].lower()
+    if arg not in ['msg', 'msgs','message', 'messages', 'days','day']:
+        return await message.channel.send("Invalid argument: Usage: t?serverchat day/msg [count]")
 
-    pbid = arguments[0]
-    # Default to 1 day if not provided.
-    days = 1
+    count = 100  # default
     if len(arguments) >= 2:
         try:
-            days = max(1, int(arguments[1]))
-        except Exception:
-            await message.channel.send("Days must be a number (e.g. `1` or `2`).")
+            count = int(arguments[1])
+        except ValueError:
+            await message.channel.send("❌ The count must be a number.")
             return
-
-    # Hard cap to avoid huge scans.
-    if days > 7:
-        days = 7
 
     # Locate chat log file; reuse same path logic as in normal_commands.chatlist_command.
     try:
@@ -759,70 +773,168 @@ async def handle_chatlist_command(message, arguments):
         await message.channel.send("Chat log file not found on server.")
         return
 
-    # Threshold time.
-    now = datetime.datetime.now()
-    threshold = now - datetime.timedelta(days=days)
+    try:
+        with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
+            raw = [l for l in f.readlines() if l.strip()]
+    except Exception as exc:
+        await message.channel.send(f"Failed to read chat log: `{exc}`")
+        return
+    
+    # ── filter lines ──────────────────────────
+ 
+    if arg in ('msg', 'msgs', 'message', 'messages'):
+        count = max(1, min(count, 2000))  # clamp 1–2000
+        selected = []
+
+        for line in reversed(raw):
+            if 'Host msg:' not in line or '[DC]' in line:
+                selected.append(line)
+                if len(selected) == count:
+                    break
+
+        selected.reverse()  # restore chronological order (oldest-to-newest)
+        lines = [_parse_log_line(l.rstrip('\n')) for l in selected if l.strip()]
+        title = f"💬 Last {len(selected)} Messages of {server}"
+ 
+    else:  # day / days
+        count    = max(1, min(count, 7))          # clamp 1–7
+        cutoff   = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=count)
+        selected = []
+ 
+        for line in raw:
+            # Expected log format: [YYYY-MM-DD HH:MM:SS] ...
+            # Falls back to including all lines if timestamp can't be parsed.
+            try:
+                ts_str  = line[0:19]               # "[2025-07-09 14:32:00]"
+                ts      = datetime.datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo= datetime.timezone.utc)
+                if ts >= cutoff:
+                    selected.append(line)
+            except (ValueError, IndexError):
+                selected.append(f"- {line}")              # keep lines we can't parse
+        lines = [_parse_log_line(l.rstrip('\n')) for l in selected if l.strip() and ('Host msg:' not in l or '[DC]' in l)]
+        title = f"💬 Chat from the Last {count} Day{'s' if count != 1 else ''} in {server}"
+ 
+    if not selected:
+        await message.channel.send("No messages found for that range.")
+        return
+    view = ChatPaginatorView(lines= lines, title=title, author=message.author)
+    sent = await message.channel.send(content=view._build_content(), view=view)
+    view.message = sent
+
+async def handle_chatlist_command(message, arguments):
+    """Show server chat filtered by pb-id(s), with an optional message count limit.
+
+    Usage from Discord:
+    t?chatlist [pb-id1] [pb-id2] ... [count]
+
+    Example:
+    t?chatlist pb-IF4xUVgSBg== 300 -> last 300 matching messages for that pb-id
+    t?chatlist pb-IF4xUVgSBg== pb-IF4OU0UkLw== -> matches for either pb-id, default count
+    created by sanji"""
+    server = babase.app.classic.server._config.party_name
+    if not server:
+        server = 'Unknown'
+
+    if not arguments:
+        await message.channel.send("usage: t?chatlist [pb-ids] [count]")
+        return
+
+    try:
+        count = min(3000, int(arguments[-1]))
+        arguments = arguments[:-1]
+    except ValueError:
+        count = 100
+
+    # Re-check after possibly stripping the count arg — otherwise an
+    # input like "t?chatlist 300" (count only, no pb-ids) would silently
+    # fall through with an empty arguments list and match everything.
+    if not arguments:
+        await message.channel.send("usage: t?chatlist [pb-ids] [count]")
+        return
+
+    for pb in arguments:
+        if not pb.startswith("pb"):
+            await message.channel.send("Invalid pb-ids. Enter only valid pb-ids")
+            return
+
+    # Locate chat log file; reuse same path logic as in normal_commands.chatlist_command.
+    try:
+        base = _babase.env().get('python_directory_user')
+        if not base:
+            raise RuntimeError("python_directory_user not set")
+        log_path = os.path.join(base, 'serverdata', 'Chat Logs.log')
+    except Exception as exc:
+        await message.channel.send(f"Could not locate chat log file: `{exc}`")
+        return
+
+    if not os.path.exists(log_path):
+        await message.channel.send("Chat log file not found on server.")
+        return
 
     try:
         with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
-            lines = f.readlines()
+            raw = [l for l in f.readlines() if l.strip()]
     except Exception as exc:
         await message.channel.send(f"Failed to read chat log: `{exc}`")
         return
 
-    matched: list[str] = []
+    # filter lines
+    lines = []
+    msg_count = 0
 
-    for ln in lines:
-        if pbid not in ln:
-            continue
+    for text in reversed(raw):
+        if any(pb in text for pb in arguments) and "Host msg" not in text:
+            lines.append(_parse_log_line(text.rstrip('\n')))
+            msg_count += 1
+            if msg_count == count:
+                break
+    lines.reverse()  # restore chronological order (oldest-to-newest) for display
+    title = f"💬 Last {len(lines)} Messages of {server} for pb-ids {', '.join(arguments)}"
 
-        # Try to parse timestamp from the beginning of the line.
-        # Common format: "[YYYY-MM-DD HH:MM:SS] ..." or "YYYY-MM-DD HH:MM:SS ..."
-        ts_ok = False
-        try:
-            raw = ln.strip()
-            if raw.startswith('[') and len(raw) >= 21:
-                ts_str = raw[1:20]
-            else:
-                ts_str = raw[:19]
-            dt = datetime.datetime.strptime(ts_str, '%Y-%m-%d %H:%M:%S')
-            if dt >= threshold:
-                ts_ok = True
-        except Exception:
-            # If we can't parse the timestamp, keep the line (better too many than missing).
-            ts_ok = True
-
-        if ts_ok:
-            matched.append(ln.strip())
-
-    if not matched:
-        await message.channel.send(f"No chat messages found for `{pbid}` in the last {days} day(s).")
+    if not lines:
+        await message.channel.send("No messages found for that pb-ids.")
         return
 
-    # Only show the most recent 50 matching lines to avoid spam.
-    matched = matched[-50:]
+    view = ChatPaginatorView(lines=lines, title=title, author=message.author)
+    sent = await message.channel.send(content=view._build_content(), view=view)
+    view.message = sent
 
-    # Build one or more messages respecting Discord 2000-char limit.
-    header = f"Chat list for `{pbid}` (last {days} day(s))\n"
-    block = ""
-    messages = []
-    for ln in matched:
-        line = ln + "\n"
-        if len(header) + len(block) + len(line) > 1900:
-            messages.append(header + "```text\n" + block + "```")
-            block = ""
-        block += line
-    if block:
-        messages.append(header + "```text\n" + block + "```")
+async def handle_info_cmd(message, arguments:list[str]):
+    if not arguments:
+        await message.channel.send("Usage: t?info pb-id")
+        return
+    if not arguments[0].startswith('pb'):
+        await message.channel.send("Invalid pb-id")
+        return
+    data = pdata.player_info(arguments[0])
+    if data:
+        await message.channel.send(data)
+        return
+    
+    await message.channel.send("Player data not found in server. Fetching from bs web")
+    import requests
+    def get_bombsquad_player(pb_id: str) -> dict:
+        url = "http://bombsquadgame.com/accountquery"
+        params = {"id": pb_id}
+        headers = {"User-Agent": "Mozilla/5.0"}
 
-    # Send paginated messages with short delay to avoid rate limits.
-    for idx, content in enumerate(messages, start=1):
-        if len(messages) > 1:
-            content_with_page = content + f"\n_Page {idx}/{len(messages)}_"
+        response = requests.get(url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
         else:
-            content_with_page = content
-        await message.channel.send(content_with_page)
-        await asyncio.sleep(1.0)
+            print(f"Error {response.status_code}: {response.text}")
+            return {}
+    player_data = get_bombsquad_player(arguments[0])
+    if not player_data:
+        await message.channel.send("Unable to fetch the data")
+        return
+    display_name = player_data.get("name_html").split('>')[1]
+    created = datetime.datetime(*player_data.get("created")).timestamp()
+
+    msg = f"Account: {display_name}\nCreated: <t:{int(created)}:f>"
+    await message.channel.send(msg)
+
 
 def _format_mod_entries(entries: list[tuple[str, str, str, str]]) -> list[str]:
     """Return markdown lines for embed descriptions."""
@@ -1641,7 +1753,7 @@ async def refresh_stats():
                     msg = await stats_channel.send(embed=stats_embed)
                     livestatsmsgs.insert(0, msg)
 
-            await asyncio.sleep(5)  # Stagger chat embed update to avoid rate limit
+            await asyncio.sleep(2)  # Stagger chat embed update to avoid rate limit
 
             # Handle chat embed (index 1)
             chat_embed = await get_chat_embed()
@@ -1662,7 +1774,7 @@ async def refresh_stats():
             import traceback
             print(f"Error updating stats: {e}")
             traceback.print_exc()
-        await asyncio.sleep(15)  # Increased from 3s to 15s to avoid Discord rate limits
+        await asyncio.sleep(10)  # Increased from 3s to 15s to avoid Discord rate limits
 
 async def send_logs():
     global logs, _send_logs_running
@@ -1841,7 +1953,7 @@ async def get_stats_embed():
     )
     
     embed.set_author(
-        name="LIVE SERVER STATUS | NODE #1", 
+        name="LIVE SERVER STATUS", 
         icon_url="https://cdn.discordapp.com/emojis/878301194865508422.gif?size=512"
     )
     
@@ -2177,3 +2289,123 @@ class BsDataCollector:
 class BsDataThread:
     def __init__(self):
         self.collector = BsDataCollector()
+
+
+ 
+#  Paginator View
+class ChatPaginatorView(discord.ui.View):
+    """
+    Paginated viewer for server chat logs.
+    Buttons: |⏮  ◀  🔢  ▶  ⏭|
+    Times out after 3 minutes of inactivity.
+    """
+
+    PER_PAGE = 15
+
+    def __init__(self, lines: list[str], title: str, author: discord.User | discord.Member):
+        super().__init__(timeout=180)
+        self.lines   = lines
+        self.title   = title
+        self.author  = author
+        self.page    = 0
+        self.total   = max(1, (len(lines) + self.PER_PAGE - 1) // self.PER_PAGE)
+        self.message: discord.Message | None = None
+
+        self._sync_buttons()
+
+    # ── helpers ──────────────────────────────
+
+    def _sync_buttons(self):
+        self.btn_first.disabled = self.page == 0
+        self.btn_prev.disabled  = self.page == 0
+        self.btn_next.disabled  = self.page == self.total - 1
+        self.btn_last.disabled  = self.page == self.total - 1
+
+    def _build_content(self) -> str:
+        start = self.page * self.PER_PAGE
+        chunk = self.lines[start : start + self.PER_PAGE]
+
+        body = "\n".join(chunk) or "*(no messages)*"
+        footer = f"📄 Page {self.page + 1}/{self.total}  •  {len(self.lines)} messages total"
+
+        return f"**{self.title}**\n{body}\n{footer}"
+
+    # ── interaction guard ─────────────────────
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author.id:
+            await interaction.response.send_message(
+                "Only the person who ran the command can use these buttons.", ephemeral=True
+            )
+            return False
+        return True
+
+    # ── buttons ───────────────────────────────
+
+    @discord.ui.button(emoji="⏮️", style=discord.ButtonStyle.gray)
+    async def btn_first(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page = 0
+        self._sync_buttons()
+        await interaction.response.edit_message(content=self._build_content(), view=self)
+
+    @discord.ui.button(emoji="◀️", style=discord.ButtonStyle.primary)
+    async def btn_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page -= 1
+        self._sync_buttons()
+        await interaction.response.edit_message(content=self._build_content(), view=self)
+
+    @discord.ui.button(emoji="🔢", style=discord.ButtonStyle.danger)
+    async def btn_jump(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(JumpModal(self))
+
+    @discord.ui.button(emoji="▶️", style=discord.ButtonStyle.primary)
+    async def btn_next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page += 1
+        self._sync_buttons()
+        await interaction.response.edit_message(content=self._build_content(), view=self)
+
+    @discord.ui.button(emoji="⏭️", style=discord.ButtonStyle.gray)
+    async def btn_last(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page = self.total - 1
+        self._sync_buttons()
+        await interaction.response.edit_message(content=self._build_content(), view=self)
+
+    # ── timeout ───────────────────────────────
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except discord.HTTPException:
+                pass
+ 
+class JumpModal(discord.ui.Modal, title="Jump to page"):
+    page_input = discord.ui.TextInput(
+        label       = "Page number",
+        placeholder = "Enter a page number…",
+        min_length  = 1,
+        max_length  = 4,
+    )
+ 
+    def __init__(self, paginator: ChatPaginatorView):
+        super().__init__()
+        self.paginator = paginator
+ 
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            target = int(self.page_input.value) - 1          # convert to 0-indexed
+            if not (0 <= target < self.paginator.total):
+                raise ValueError
+        except ValueError:
+            await interaction.response.send_message(
+                f"Enter a number between 1 and {self.paginator.total}.", ephemeral=True
+            )
+            return
+ 
+        self.paginator.page = target
+        self.paginator._sync_buttons()
+        await interaction.response.edit_message(
+            content=self.paginator._build_content(), view=self.paginator
+        )

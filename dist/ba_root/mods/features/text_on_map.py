@@ -19,8 +19,8 @@ class textonmap:
 
     def __init__(self):
         data = setti['textonmap']
-        left = data['bottom left watermark']
-        top = data['top watermark']  # This is the text that will be displayed
+        #replaced letter 'O' with bomb logo
+        top:str = data['top watermark'].replace('O',babase.charstr(babase.SpecialChar.LOGO_FLAT))  # This is the text that will be displayed
         nextMap = ""
         try:
             nextMap = bs.get_foreground_host_session().get_next_game_description().evaluate()
@@ -33,10 +33,12 @@ class textonmap:
             pass
         self.index = 0
         self.highlights = data['center highlights']["msg"]
-        self.left_watermark(left)
+        self.left_watermark()
+        self.right_watermark()
         self.top_message(top)  # Pass the top message text here
         self.nextGame(nextMap)
         self.restart_msg()
+        
         if hasattr(_babase, "season_ends_in_days"):
             if _babase.season_ends_in_days < 100:
                 self.season_reset(_babase.season_ends_in_days)
@@ -64,8 +66,9 @@ class textonmap:
         self.delt = bs.timer(7, node.delete)
         self.index = int((self.index + 1) % len(self.highlights))
 
-    def left_watermark(self, text):
-        # First text node with rainbow animation
+
+    def left_watermark(self):
+        text = u'\ue043 OWNER : SANJI'
         node = bs.newnode('text',
                           attrs={
                               'text': text,
@@ -74,39 +77,34 @@ class textonmap:
                               'v_attach': 'bottom',
                               'h_attach': 'left',
                               'scale': 0.7,
-                              'position': (25, 95),
+                              'position': (15, 30),
                               'color': (1, 1, 1)
                           })
-        
-        # Add the rainbow color animation
         bs.animate_array(
-            node,
-            "color",
-            3,
-            {
-                0: (1, 0, 0),
-                0.2: (1, 0.5, 0),
-                0.4: (1, 1, 0),
-                0.6: (0, 1, 0),
-                0.8: (0, 1, 1),
-                1.0: (1, 0, 1),
-                1.2: (1, 0, 0),
-            },
-            loop=True,
-        )
+                    node,
+                    "color",
+                    3,
+                    {0.0: (2,0,2), 0.5: (0,2,2), 1.0: (2,2,0)},
+                    loop=True,
+                )
         
+
+    def right_watermark(self):
+
+        text = "TOP 10 - Custom Tag\nTOP 6 - Custom Effect\nTOP 2 - Admin Role\nRequirement -15k Points"
         # Second text node with special characters
         node = bs.newnode('text',
                           attrs={
-                              'text': u'\ue043[\U0001F451] OWNER : SANJI',
+                              'text': text,
                               'flatness': 1.0,
-                              'h_align': 'left',
+                              'h_align': 'right',
                               'v_attach': 'bottom',
-                              'h_attach': 'left',
-                              'scale': 0.7,
-                              'position': (25, 30),
-                              'color': (1, 1, 1)
+                              'h_attach': 'right',
+                              'scale': 0.4,
+                              'position': (-25, 85),
+                              'color': (1.0, 0.843, 0.0)
                           })
+
 
     def nextGame(self, text):
         node = bs.newnode('text',
@@ -120,6 +118,7 @@ class textonmap:
                               'position': (-25, 16),
                               'color': (0.5, 0.5, 0.5)
                           })
+
 
     def season_reset(self, text):
         node = bs.newnode('text',
@@ -171,23 +170,15 @@ class textonmap:
 
             bs.apptimer(base_delay + idx * step, _reveal)
 
-        # Re-run the fade animation every 10 seconds
+        '''# Re-run the fade animation every 10 seconds
         if not hasattr(self, '_top_fade_timer'):
-            self._top_fade_timer = bs.timer(10.0, babase.Call(self._run_top_fade_animation), repeat=True)
-    
+            self._top_fade_timer = bs.timer(10.0, babase.Call(self._run_top_fade_animation), repeat=True)'''
+
     def _make_shimmer_text(self, tag_text, base_color):
         TAG_SCALE = 1.3  # Larger scale for top message
-        TAG_SPACING = 20  # More spacing for larger text
-        
-        # Ocean Blue & Green Combination (beautiful colors)
-        WAVE_COLOR_1 = (2, 1, 0)   # Deep Blue
-        WAVE_COLOR_2 = (2, 0, 0)   # Cyan
-        WAVE_COLOR_3 = (2, 2, 2)   # Emerald Green
-        
-        # Slower wave parameters
-        WAVE_PERIOD = 4.0  # Increased from 2.5 to 4.0 (slower overall wave)
-        WAVE_DELAY = 0.15  # Increased from 0.08 to 0.15 (more delay between characters)
-        TICK_MS = 50
+        TAG_SPACING = 25  # More spacing for larger text
+
+        PULSE_PERIOD = 2.5
 
         n = max(1, len(tag_text))
         center_index = (n - 1) * 0.5
@@ -203,13 +194,24 @@ class textonmap:
                     'opacity': 0.0,
                     'attach': 'topCenter'
                 })
+                # Native looping opacity pulse — replaces the manual _tick() math.
+                bs.animate(
+                    self._top_underline, 'opacity',
+                    {0.0: 0.10, PULSE_PERIOD / 2.0: 0.18, PULSE_PERIOD: 0.10},
+                    loop=True
+                )
         except Exception:
             pass
+
+        def _random_color():
+            return (random.random(), random.random(), random.random())
 
         self._glow_nodes = []
         for i, ch in enumerate(tag_text):
             x = TAG_SPACING * (i - center_index)
             y = -70
+
+            start_color = _random_color()
 
             # Core letter node
             char_node = bs.newnode(
@@ -221,14 +223,43 @@ class textonmap:
                     'v_attach': 'top',
                     'scale': TAG_SCALE,
                     'position': (x, y),
-                    'color': tuple(base_color),
+                    'color': start_color,
                     'shadow': 0.8,
                     'vr_depth': -19
                 }
             )
             self._char_nodes.append((char_node, i))
 
-            # Soft glow behind the letter
+            # Native looping color cycle — a per-letter randomized 4-color
+            # sequence, baked in once at creation instead of re-picking a
+            # new random target via a recursive Python timer every cycle.
+            c2, c3, c4 = _random_color(), _random_color(), _random_color()
+            seg = random.uniform(0.5, 1.2)  # per-letter cycle speed variance
+            bs.animate_array(
+                char_node, 'color', 3,
+                {
+                    0.0: start_color,
+                    seg: c2,
+                    seg * 2: c3,
+                    seg * 3: c4,
+                    seg * 4: start_color,
+                },
+                loop=True
+            )
+
+            # Native looping scale pulse — replaces the manual _tick() sine-wave loop.
+            phase_offset = i * 0.1
+            bs.animate(
+                char_node, 'scale',
+                {
+                    phase_offset: TAG_SCALE,
+                    phase_offset + PULSE_PERIOD / 2.0: TAG_SCALE * 1.03,
+                    phase_offset + PULSE_PERIOD: TAG_SCALE,
+                },
+                loop=True
+            )
+
+            '''# Soft glow behind the letter
             try:
                 glow_node = bs.newnode(
                     'text',
@@ -247,69 +278,19 @@ class textonmap:
                 )
                 self._glow_nodes.append((glow_node, i))
             except Exception:
-                pass
+                pass'''
 
-        t = {'v': 0.0}
-
-        def _tick():
-            try:
-                t['v'] = (t['v'] + TICK_MS / 1000.0) % max(0.5, WAVE_PERIOD)
-                for idx, pair in enumerate(self._char_nodes):
-                    char_node, _ = pair
-                    if not char_node.exists():
-                        continue
-                        
-                    local_time = (t['v'] + idx * WAVE_DELAY) % WAVE_PERIOD
-                    phase = local_time / WAVE_PERIOD
-
-                    if phase < 1/3:
-                        u = phase * 3
-                        r = WAVE_COLOR_1[0] + (WAVE_COLOR_2[0] - WAVE_COLOR_1[0]) * u
-                        g = WAVE_COLOR_1[1] + (WAVE_COLOR_2[1] - WAVE_COLOR_1[1]) * u
-                        b = WAVE_COLOR_1[2] + (WAVE_COLOR_2[2] - WAVE_COLOR_1[2]) * u
-                    elif phase < 2/3:
-                        u = (phase - 1/3) * 3
-                        r = WAVE_COLOR_2[0] + (WAVE_COLOR_3[0] - WAVE_COLOR_2[0]) * u
-                        g = WAVE_COLOR_2[1] + (WAVE_COLOR_3[1] - WAVE_COLOR_2[1]) * u
-                        b = WAVE_COLOR_2[2] + (WAVE_COLOR_3[2] - WAVE_COLOR_2[2]) * u
-                    else:
-                        u = (phase - 2/3) * 3
-                        r = WAVE_COLOR_3[0] + (WAVE_COLOR_1[0] - WAVE_COLOR_3[0]) * u
-                        g = WAVE_COLOR_3[1] + (WAVE_COLOR_1[1] - WAVE_COLOR_3[1]) * u
-                        b = WAVE_COLOR_3[2] + (WAVE_COLOR_1[2] - WAVE_COLOR_3[2]) * u
-
-                    char_node.color = (r, g, b)
-
-                    # Subtle scale pulse
-                    try:
-                        pulse = 1.0 + 0.03 * math.sin(phase * 2.0 * math.pi)
-                        char_node.scale = TAG_SCALE * pulse
-                    except Exception:
-                        pass
-
-                # Animate glow opacity in sync
-                try:
-                    for idx, pair in enumerate(getattr(self, '_glow_nodes', [])):
-                        glow_node, _ = pair
-                        if not glow_node.exists():
-                            continue
-                        local_time = (t['v'] + idx * WAVE_DELAY) % WAVE_PERIOD
-                        phase = local_time / WAVE_PERIOD
-                        glow = 0.12 + 0.20 * max(0.0, math.sin(phase * 2.0 * math.pi))
-                        glow_node.opacity = glow
-                except Exception:
-                    pass
-
-                # Underline gentle pulse
-                try:
-                    if hasattr(self, '_top_underline') and self._top_underline.exists():
-                        self._top_underline.opacity = 0.10 + 0.08 * (0.5 + 0.5 * math.sin(t['v'] * 2.0 * math.pi / WAVE_PERIOD))
-                except Exception:
-                    pass
-            except:
-                pass
-
-        self._color_timer = bs.Timer(TICK_MS / 1000.0, babase.Call(_tick), repeat=True)
+        '''# Animate glow opacity in sync with the scale pulse
+        try:
+            for idx, pair in enumerate(getattr(self, '_glow_nodes', [])):
+                glow_node, _ = pair
+                if not glow_node.exists():
+                    continue
+                phase = ((t['v'] + idx * 0.1) % PULSE_PERIOD) / PULSE_PERIOD
+                glow = 0.12 + 0.20 * max(0.0, math.sin(phase * 2.0 * math.pi))
+                glow_node.opacity = glow
+        except Exception:
+            pass'''
 
     def _run_top_fade_animation(self):
         # Safely re-apply per-letter fade on the existing top-message nodes

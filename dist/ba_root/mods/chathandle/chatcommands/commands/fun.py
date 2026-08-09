@@ -49,7 +49,7 @@ def ExcelCommand(command, arguments, clientid, accountid):
 
 def floater(arguments, clientid):
     try:
-        from .. import floater
+        from ....plugins import floater
         if arguments == []:
             floater.assignFloInputs(clientid)
         else:

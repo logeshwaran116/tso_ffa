@@ -1134,18 +1134,17 @@ class NewPlayerSpaz(PlayerSpaz):
         except Exception:
             return None
 
-    @effect(repeat_interval=0.0035)
+    @effect(repeat_interval=0.03)  # was 0.0035 — way faster than needed, was overloading the physics/OOB checks
     def _add_orbguard(self):
-        # Number of orbs and their spacing
         num_orbs = 3
         radius = 1.2
 
         orb_data = [
-        {'mesh': 'aliHead', 'texture': 'aliColor', 'color': (0.5, 0.0, 1.0)},
-        {'mesh': 'agentHead', 'texture': 'agentColor', 'color': (1.0, 0.5, 0.0)},
-        {'mesh': 'bonesHead', 'texture': 'bonesColor', 'color': (0.0, 1.0, 0.5)}
-    ]
-        # Store nodes to re-use/delete as needed
+            {'mesh': 'aliHead', 'texture': 'aliColor', 'color': (0.5, 0.0, 1.0)},
+            {'mesh': 'agentHead', 'texture': 'agentColor', 'color': (1.0, 0.5, 0.0)},
+            {'mesh': 'bonesHead', 'texture': 'bonesColor', 'color': (0.0, 1.0, 0.5)}
+        ]
+
         if not hasattr(self, "_orbguard_nodes"):
             self._orbguard_nodes = []
         if not self.is_alive() or not self.node.exists():
@@ -1154,185 +1153,42 @@ class NewPlayerSpaz(PlayerSpaz):
                     node.delete()
             self._orbguard_nodes = []
             return
-        # Create static orbs only once
+
         if len(self._orbguard_nodes) == 0:
             for i in range(num_orbs):
-                # Angle for even spacing
                 data = orb_data[i % len(orb_data)]
                 angle = 2 * math.pi * i / num_orbs
                 node = bs.newnode('prop',
-                                  owner=self.node,
-                                  attrs={
-                                      'body': 'sphere',
-                                      'mesh': bs.getmesh(data['mesh']),
-                                      'color_texture': bs.gettexture(data['texture']),
-                                      'mesh_scale': 0.5,
-                                      'body_scale': 0.0,
-                                      'shadow_size': 0.0,
-                                      'gravity_scale': 0.0,
-                                  })
+                                owner=self.node,
+                                delegate=self,   # <- added: routes OutOfBoundsMessage to self.handlemessage
+                                attrs={
+                                    'body': 'sphere',
+                                    'mesh': bs.getmesh(data['mesh']),
+                                    'color_texture': bs.gettexture(data['texture']),
+                                    'mesh_scale': 0.5,
+                                    'body_scale': 0.01,  # <- was 0.0; tiny nonzero avoids degenerate zero-size collision
+                                    'shadow_size': 0.0,
+                                    'gravity_scale': 0.0,
+                                })
                 light = bs.newnode('light',
-                                   owner=node,
-                                   attrs={
-                                       'intensity': 0.8,
-                                       'color': (0.5, 0.0, 1.0),
-                                       'radius': 0.05,
-                                       'volume_intensity_scale': 0.7,
-                                   })
+                                owner=node,
+                                attrs={
+                                    'intensity': 0.8,
+                                    'color': (0.5, 0.0, 1.0),
+                                    'radius': 0.05,
+                                    'volume_intensity_scale': 0.7,
+                                })
                 node.connectattr('position', light, 'position')
                 self._orbguard_nodes.append((node, angle))
-        # Update positions to stay around player (no rotation)
+
         np = self.node.torso_position
         for node, angle in self._orbguard_nodes:
-            # Orbs remain at fixed angles around player
             pos = (
                 np[0] + radius * math.cos(angle),
                 np[1] + 0.5,
                 np[2] + radius * math.sin(angle)
             )
             node.position = pos
-
-    @effect(repeat_interval=0.0035)
-    def _add_premiumhalo(self):
-        """Premium halo effect with orbiting heads, pulse light, and spark trail."""
-        radius = 1.05
-        num_orbs = 4
-
-        if not hasattr(self, "_premiumhalo_nodes"):
-            self._premiumhalo_nodes = []
-        if not hasattr(self, "_premiumhalo_angle"):
-            self._premiumhalo_angle = 0.0
-        if not hasattr(self, "_premiumhalo_core_light"):
-            self._premiumhalo_core_light = None
-
-        if not self.is_alive() or not self.node.exists():
-            for node, light, _, _ in getattr(self, "_premiumhalo_nodes", []):
-                if node.exists():
-                    node.delete()
-                if light.exists():
-                    light.delete()
-            self._premiumhalo_nodes = []
-            if self._premiumhalo_core_light is not None and self._premiumhalo_core_light.exists():
-                self._premiumhalo_core_light.delete()
-            self._premiumhalo_core_light = None
-            return
-
-        if len(self._premiumhalo_nodes) == 0:
-            orb_data = [
-                ("aliHead", "aliColor", (1.0, 0.5, 0.1)),
-                ("frostyHead", "frostyColor", (0.2, 0.8, 1.0)),
-                ("cyborgHead", "cyborgColor", (1.0, 0.9, 0.2)),
-                ("bonesHead", "bonesColor", (0.9, 0.4, 1.0)),
-            ]
-
-            try:
-                from bascenev1lib.actor.spazfactory import SpazFactory
-                from bascenev1lib.actor.powerupbox import PowerupBoxFactory
-                from bascenev1lib.gameutils import SharedObjects as _SO
-                factory = SpazFactory.get()
-                shared = _SO.get()
-                ghost = bs.Material()
-                ghost.add_actions(
-                    conditions=(('they_have_material', factory.spaz_material), 'or',
-                                ('they_have_material', shared.player_material), 'or',
-                                ('they_have_material', shared.attack_material), 'or',
-                                ('they_have_material', shared.pickup_material), 'or',
-                                ('they_have_material', PowerupBoxFactory.get().powerup_accept_material)),
-                    actions=(('modify_part_collision', 'collide', False),
-                             ('modify_part_collision', 'physical', False)))
-            except Exception:
-                ghost = None
-
-            for i in range(num_orbs):
-                mesh_name, tex_name, light_color = orb_data[i % len(orb_data)]
-                base_angle = i * (2 * math.pi / num_orbs)
-                node = bs.newnode(
-                    'prop',
-                    owner=self.node,
-                    attrs={
-                        'body': 'sphere',
-                        'mesh': bs.getmesh(mesh_name),
-                        'color_texture': bs.gettexture(tex_name),
-                        'mesh_scale': 0.45,
-                        'body_scale': 0.0,
-                        'shadow_size': 0.0,
-                        'gravity_scale': 0.0,
-                        'materials': ([ghost] if ghost else [])
-                    }
-                )
-                light = bs.newnode(
-                    'light',
-                    owner=node,
-                    attrs={
-                        'intensity': 0.55,
-                        'color': light_color,
-                        'radius': 0.05,
-                        'volume_intensity_scale': 0.6,
-                    }
-                )
-                node.connectattr('position', light, 'position')
-                self._premiumhalo_nodes.append((node, light, base_angle, light_color))
-
-                def _freeze_node(n=node):
-                    try:
-                        if not self.is_alive() or not self.node.exists() or not n.exists():
-                            return
-                        n.velocity = (0.0, 0.0, 0.0)
-                        bs.timer(0.1, _freeze_node)
-                    except Exception:
-                        return
-
-                bs.timer(0.1, _freeze_node)
-
-            self._premiumhalo_core_light = bs.newnode(
-                'light',
-                owner=self.node,
-                attrs={
-                    'color': (1.0, 0.7, 0.2),
-                    'height_attenuated': False,
-                    'radius': 0.65,
-                    'intensity': 0.25,
-                },
-            )
-            self.node.connectattr('position', self._premiumhalo_core_light, 'position')
-
-        self._premiumhalo_angle += 0.03
-        if self._premiumhalo_angle > 2 * math.pi:
-            self._premiumhalo_angle -= 2 * math.pi
-
-        t = bs.time()
-        center = self.node.torso_position
-        for i, (node, light, base_angle, _) in enumerate(self._premiumhalo_nodes):
-            angle = base_angle + self._premiumhalo_angle
-            bob = 0.62 + (0.12 * math.sin((t * 3.0) + i))
-            pos = (
-                center[0] + radius * math.cos(angle),
-                center[1] + bob,
-                center[2] + radius * math.sin(angle),
-            )
-            try:
-                node.position = pos
-                node.velocity = (0.0, 0.0, 0.0)
-            except Exception:
-                node.position = pos
-
-            hue = (t * 0.12 + (i / max(1, num_orbs))) % 1.0
-            light.color = colorsys.hsv_to_rgb(hue, 0.85, 1.0)
-            light.intensity = 0.42 + (0.16 * (0.5 + 0.5 * math.sin((t * 6.0) + i)))
-
-        if self._premiumhalo_core_light is not None and self._premiumhalo_core_light.exists():
-            core_hue = (t * 0.08) % 1.0
-            self._premiumhalo_core_light.color = colorsys.hsv_to_rgb(core_hue, 0.65, 1.0)
-            self._premiumhalo_core_light.intensity = 0.22 + (0.12 * (0.5 + 0.5 * math.sin(t * 4.0)))
-
-        bs.emitfx(
-            position=(center[0], center[1] + 0.65, center[2]),
-            velocity=(0.0, 0.15, 0.0),
-            count=1,
-            scale=0.22,
-            spread=0.08,
-            chunk_type="spark"
-        )
 
     @effect(repeat_interval=0.02)
     def _add_solarcrown(self):

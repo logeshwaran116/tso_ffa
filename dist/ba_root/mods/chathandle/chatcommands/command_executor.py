@@ -84,6 +84,8 @@ def execute(msg, clientid):
             try:
                 management.ExcelCommand(command, arguments, clientid, accountid)
             except Exception:
+                import traceback
+                traceback.print_exc()
                 bs.broadcastmessage("command error", transient=True, clients=[clientid])
         else:
             bs.broadcastmessage("access denied", transient=True,
@@ -96,6 +98,8 @@ def execute(msg, clientid):
             try:
                 fun.ExcelCommand(command, arguments, clientid, accountid)
             except Exception:
+                import traceback
+                traceback.print_exc()
                 bs.broadcastmessage("command error", transient=True, clients=[clientid])
         else:
             bs.broadcastmessage("access denied", transient=True,
@@ -108,6 +112,8 @@ def execute(msg, clientid):
             try:
                 cheats.ExcelCommand(command, arguments, clientid, accountid)
             except Exception:
+                import traceback
+                traceback.print_exc()
                 bs.broadcastmessage("command error", transient=True, clients=[clientid])
         else:
             bs.broadcastmessage("access denied", transient=True,

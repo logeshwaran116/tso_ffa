@@ -1766,6 +1766,7 @@ def set_enable_default_kick_voting(enable: bool) -> None:
     return None
 
 
+
 def set_internal_music(
     music: babase.SimpleSound | None, volume: float = 1.0, loop: bool = True
 ) -> None:
