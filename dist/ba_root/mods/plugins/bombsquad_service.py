@@ -165,7 +165,23 @@ def get_perks():
 
 def update_perks(custom):
     logger.log(f'updating custom perks, request from web')
-    pdata.update_custom_perks(custom)
+    try:
+        ct_list = custom.get('customtag',{})
+        ct_dict = {}
+        for pb_id, value in ct_list.items():
+            if len(value) == 1:
+                ct_dict[pb_id] = {'tag':value[0], 'anim_id': 1}
+
+            elif len(value) >= 2:
+                try:
+                    ct_dict[pb_id] = {'tag': value[0], 'anim_id': int(value[1])}
+                except ValueError:
+                    ct_dict[pb_id] = {'tag': value[0], 'anim_id': 1}
+        custom['customtag'] = ct_dict
+        pdata.update_custom_perks(custom)
+    except Exception:
+        import traceback
+        traceback.print_exc()
 
 
 def update_roles(roles):
