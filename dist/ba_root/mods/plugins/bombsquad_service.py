@@ -153,7 +153,14 @@ def get_perks():
 
     #Converting dict data of tag to list to make in readable in website otherwise it will show [object]
     ct_data:dict = perks.get('customtag',{})
-    ct_list = {pb_id: [tag_data['tag'], tag_data['anim_id']] for pb_id, tag_data in ct_data.items() if tag_data}
+    ct_list = {}
+    for pb_id, tag_data in ct_data.items():
+        if isinstance(tag_data, dict):
+            # dict form → convert to list
+            ct_list[pb_id] = [tag_data.get('tag', 'N/A'), tag_data.get('anim_id', 1)]
+        elif isinstance(tag_data, list):
+            # already list form → keep as is
+            ct_list[pb_id] = tag_data
     perks['customtag'] = ct_list
 
     return {"perks": perks,
@@ -169,6 +176,7 @@ def update_perks(custom):
         ct_list = custom.get('customtag',{})
         ct_dict = {}
         for pb_id, value in ct_list.items():
+            print(f"{pb_id}: {value}")
             if len(value) == 1:
                 ct_dict[pb_id] = {'tag':value[0], 'anim_id': 1}
 
@@ -179,6 +187,7 @@ def update_perks(custom):
                     ct_dict[pb_id] = {'tag': value[0], 'anim_id': 1}
         custom['customtag'] = ct_dict
         pdata.update_custom_perks(custom)
+
     except Exception:
         import traceback
         traceback.print_exc()
