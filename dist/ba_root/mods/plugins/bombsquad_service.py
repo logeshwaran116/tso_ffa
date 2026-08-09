@@ -149,7 +149,14 @@ def get_roles():
 
 def get_perks():
     # TODO wire with spaz_effects to fetch list of effects.
-    return {"perks": pdata.get_custom_perks(),
+    perks = pdata.get_custom_perks()
+
+    #Converting dict data of tag to list to make in readable in website otherwise it will show [object]
+    ct_data:dict = perks.get('customtag',{})
+    ct_list = {pb_id: [tag_data['tag'], tag_data['anim_id']] for pb_id, tag_data in ct_data.items() if tag_data}
+    perks['customtag'] = ct_list
+
+    return {"perks": perks,
             "availableEffects": ["spark", "glow", "fairydust", "sparkground",
                                  "sweat", "sweatground", "distortion", "shine",
                                  "highlightshine", "scorch", "ice", "iceground",
