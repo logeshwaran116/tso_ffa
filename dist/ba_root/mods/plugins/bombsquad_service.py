@@ -177,6 +177,8 @@ def update_perks(custom):
     try:
         ct_list = custom.get('customtag',{})
         ct_dict = {}
+        print(custom.keys())
+        print(ct_list)
 
         # The web api returns the data as a single string
         # ex: pb-1: "Tag,7"
