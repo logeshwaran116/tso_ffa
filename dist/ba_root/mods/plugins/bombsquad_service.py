@@ -161,9 +161,8 @@ def get_perks():
         elif isinstance(tag_data, list):
             # already list form → keep as is
             ct_list[pb_id] = tag_data
-    perks['customtag'] = ct_list
 
-    return {"perks": perks,
+    return {"perks": {**perks, "customtag": ct_list},
             "availableEffects": ["spark", "glow", "fairydust", "sparkground",
                                  "sweat", "sweatground", "distortion", "shine",
                                  "highlightshine", "scorch", "ice", "iceground",
