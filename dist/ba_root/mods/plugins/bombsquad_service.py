@@ -151,16 +151,19 @@ def get_perks():
     # TODO wire with spaz_effects to fetch list of effects.
     perks = pdata.get_custom_perks()
 
-    #Converting dict data of tag to list to make in readable in website otherwise it will show [object]
+    #Converting datatype of tag to list to make in readable in website otherwise it will show [object]
     ct_data:dict = perks.get('customtag',{})
     ct_list = {}
+
     for pb_id, tag_data in ct_data.items():
-        if isinstance(tag_data, dict):
-            # dict form → convert to list
+        if isinstance(tag_data, dict): # dict form → convert to list           
             ct_list[pb_id] = [tag_data.get('tag', 'N/A'), tag_data.get('anim_id', 1)]
-        elif isinstance(tag_data, list):
-            # already list form → keep as is
+
+        elif isinstance(tag_data, list): # already list form → keep as is           
             ct_list[pb_id] = tag_data
+
+        elif isinstance(tag_data, str): # str to list
+            ct_list[pb_id] = [tag_data]
 
     return {"perks": {**perks, "customtag": ct_list},
             "availableEffects": ["spark", "glow", "fairydust", "sparkground",
@@ -174,21 +177,22 @@ def update_perks(custom):
     try:
         ct_list = custom.get('customtag',{})
         ct_dict = {}
-        print(ct_list)
 
         # The web api returns the data as a single string
         # ex: pb-1: "Tag,7"
-        # so we converting that to dict for our use case
+        # so we converting str to dict for our use case
         for pb_id, value in ct_list.items():
             if isinstance(value, str): 
                 parts = [v.strip() for v in value.split(',')]
-                if len(parts) == 1:
+                if len(parts) == 1: #if only tag given saving with default anim id 1 
                     ct_dict[pb_id] = {'tag':parts[0], 'anim_id': 1}
-                elif len(parts) >= 2:
-                    try:
+
+                elif len(parts) >= 2:# if tag and anim id given saving it all
+                    try: #if anim id is not int save default anim id 1
                         ct_dict[pb_id] = {'tag': parts[0], 'anim_id': int(parts[1])}
                     except ValueError:
                         ct_dict[pb_id] = {'tag': parts[0], 'anim_id': 1}
+
         custom['customtag'] = ct_dict
         pdata.update_custom_perks(custom)
 
