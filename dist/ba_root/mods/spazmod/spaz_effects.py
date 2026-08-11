@@ -868,26 +868,27 @@ class NewPlayerSpaz(PlayerSpaz):
                                   'position': pos,
                                   'velocity': vel,
                                   'mesh': None,
-                                  'mesh_scale': 0.1,
+                                  'mesh_scale': 0.02,
                                   'body_scale': 0.0,
                                   'color_texture': tex,
-                                  'fuse_length': 0.1,
+                                  'fuse_length': 0.02,
                               })
             light = bs.newnode('light',
                                owner=node,
                                attrs={
-                                   'intensity': 0.3,
-                                   'volume_intensity_scale': 0.5,
+                                   'intensity': 0.001,
+                                   'volume_intensity_scale': 0.001,
                                    'color': (
                                        random.uniform(0.5, 1.5),
                                        random.uniform(0.5, 1.5),
                                        random.uniform(0.5, 1.5)
                                    ),
-                                   'radius': 0.035,
+                                   'radius': 0.005,
                                })
             node.connectattr('position', light, 'position')
-            bs.timer(0.25, bs.Call(node.delete))
-            bs.timer(0.25, bs.Call(light.delete))
+            bs.timer(0.05, bs.Call(node.delete))
+            bs.timer(0.05, bs.Call(light.delete))
+
 
     @effect(repeat_interval=1.0)
     def _add_blinkinvisible(self):
