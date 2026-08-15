@@ -181,6 +181,10 @@ def bootstraping():
     if settings["colorfullMap"]:
         from plugins import colorfulmaps2
     try:
+        from plugins import sleep_on_afk, wave_emote
+    except Exception:
+        pass
+    try:
         pass
         # from tools import healthcheck
         # healthcheck.main()
