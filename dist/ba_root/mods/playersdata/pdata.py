@@ -1085,6 +1085,9 @@ def player_info(account_id:str):
 def player_noeffect(account_id:str):
     custom = get_custom()
     ce:dict = custom.get("paideffects",{})
-    ce.pop(account_id)
-    CacheData.custom = custom
-    commit_c()
+    if account_id in ce:
+        ce.pop(account_id)
+        CacheData.custom = custom
+        commit_c()
+        return True
+    return False

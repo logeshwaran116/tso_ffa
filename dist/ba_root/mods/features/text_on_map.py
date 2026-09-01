@@ -87,7 +87,18 @@ class textonmap:
                     {0.0: (2,0,2), 0.5: (0,2,2), 1.0: (2,2,0)},
                     loop=True,
                 )
-        
+
+        text = 'Server name will change to "Arcade — Battle Grounds!"'
+        node = bs.newnode('text',
+                          attrs={
+                              'text': text,
+                              'flatness': 1.0,
+                              'h_align': 'center',
+                              'v_attach': 'bottom',
+                              'scale': 0.5,
+                              'position': (15, 30),
+                              'color': (1, 1, 1)
+                          })
 
     def right_watermark(self):
 

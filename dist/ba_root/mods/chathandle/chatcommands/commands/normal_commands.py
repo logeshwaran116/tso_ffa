@@ -565,8 +565,11 @@ def shop_command(arguments, account_id: str, clientid: int) -> None:
                 send(res.message, clientid)
             return
         elif eff == 'noeffect':
-            pdata.player_noeffect(account_id)
-            send("Paid effect Removed", clientid)
+            act = pdata.player_noeffect(account_id)
+            if act:
+                send("Paid effect Removed", clientid)
+                return
+            send("No Paid effect to remove", clientid)
             return
         else:
             res = coins.buy_effect(account_id, eff, price=EFFECT_PRICES[eff], days=3.0)
