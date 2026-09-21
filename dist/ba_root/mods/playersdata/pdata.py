@@ -695,15 +695,12 @@ def buy_tag_tagpass(client_id: int, account_id:str, tag: str, anim_id:int):
 #edited by sanji
 def get_paid_tag(account_id: str):
     custom = get_custom()
-    paid_tag = custom.get("paidtags", {}).get(account_id)
+    paid_tag = custom.get("paidtags", {}).get(account_id,{})
 
     if not paid_tag:
         return None, None
 
     if paid_tag.get("expires_at", 0) <= time.time():
-        paid_tag.pop(account_id)
-        CacheData.custom = custom
-        commit_c()
         return None, None
 
     return paid_tag.get("tag"), paid_tag.get("anim_id")
