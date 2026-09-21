@@ -682,8 +682,8 @@ def buy_tag_tagpass(client_id: int, account_id:str, tag: str, anim_id:int):
             "anim_id": anim_id,
             "expires_at": tag_pass.get(account_id, {}).get("expires_at", time.time() + 24*60*60),
         }
-        tag_pass[account_id]["used"] = True
-        bs.chatmessage(f"Tag added successfully for 1 day", clients=[client_id])
+        tag_pass.pop(account_id)
+        bs.chatmessage(f"Tag added successfully for 3 day", clients=[client_id])
         CacheData.custom = custom
         commit_c()
     except Exception:
@@ -696,8 +696,16 @@ def buy_tag_tagpass(client_id: int, account_id:str, tag: str, anim_id:int):
 def get_paid_tag(account_id: str):
     custom = get_custom()
     paid_tag = custom.get("paidtags", {}).get(account_id)
+
     if not paid_tag:
         return None, None
+
+    if paid_tag.get("expires_at", 0) <= time.time():
+        paid_tag.pop(account_id)
+        CacheData.custom = custom
+        commit_c()
+        return None, None
+
     return paid_tag.get("tag"), paid_tag.get("anim_id")
 
 
@@ -1084,9 +1092,20 @@ def player_info(account_id:str):
 
 def player_noeffect(account_id:str):
     custom = get_custom()
-    ce:dict = custom.get("paideffects",{})
-    if account_id in ce:
-        ce.pop(account_id)
+    pe:dict = custom.get("paideffects",{})
+    if account_id in pe:
+        pe.pop(account_id)
+        CacheData.custom = custom
+        commit_c()
+        return True
+    return False
+
+
+def player_notag(account_id:str):
+    custom = get_custom()
+    pt:dict = custom.get("paidtags",{})
+    if account_id in pt:
+        pt.pop(account_id)
         CacheData.custom = custom
         commit_c()
         return True

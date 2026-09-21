@@ -520,6 +520,7 @@ def shop_command(arguments, account_id: str, clientid: int) -> None:
     EFFECT_PRICES = {
         "tagpass": 2000,
         "noeffect": 0,
+        "notag": 0,
         "metal": 500,
         "spark": 600,
         "iceground": 600,
@@ -565,11 +566,18 @@ def shop_command(arguments, account_id: str, clientid: int) -> None:
                 send(res.message, clientid)
             return
         elif eff == 'noeffect':
-            act = pdata.player_noeffect(account_id)
-            if act:
+            action = pdata.player_noeffect(account_id)
+            if action:
                 send("Paid effect Removed", clientid)
                 return
             send("No Paid effect to remove", clientid)
+            return
+        elif eff == 'notag':
+            action = pdata.player_notag(account_id)
+            if action:
+                send("Paid tag Removed", clientid)
+                return
+            send("No Paid tag to remove", clientid)
             return
         else:
             res = coins.buy_effect(account_id, eff, price=EFFECT_PRICES[eff], days=3.0)
